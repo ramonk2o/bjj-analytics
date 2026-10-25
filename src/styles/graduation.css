@@ -1,0 +1,282 @@
+/* Faixa atual — inline no subtitle do header (compacto) */
+.belt-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.92rem;
+  font-weight: 500;
+  color: var(--text);
+  margin-left: 0.6rem;
+  padding-left: 0.7rem;
+  border-left: 1px solid var(--border-strong);
+}
+.belt-pill .bp-swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  border: 1px solid var(--border-strong);
+  flex-shrink: 0;
+}
+.belt-pill .bp-swatch.branca { background: var(--branca); }
+.belt-pill .bp-swatch.azul { background: var(--azul); }
+.belt-pill .bp-swatch.roxa { background: var(--roxa); }
+.belt-pill .bp-swatch.marrom { background: var(--marrom); }
+.belt-pill .bp-swatch.preta { background: var(--preta); }
+.belt-pill .bp-name { font-weight: 700; color: var(--text); }
+.belt-pill .bp-sep { color: var(--text-muted); margin: 0 0.05rem; }
+.belt-pill .bp-time { color: var(--text-dim); font-weight: 500; font-variant-numeric: tabular-nums; }
+.brand .subtitle {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+}
+/* "Próximo marco" soft highlight */
+.stat-card.highlight-soft {
+  background: linear-gradient(180deg, rgba(255,87,34,0.14) 0%, var(--card) 70%);
+  border-color: rgba(255,87,34,0.45);
+}
+.stat-card.highlight-soft .value { color: var(--accent); }
+.stat-card.highlight-soft .label { color: var(--accent); }
+
+/* Graduação */
+.grad-card {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 1rem 1.1rem 1.15rem;
+}
+.grad-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.85rem;
+  flex-wrap: wrap;
+}
+.grad-belt {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-weight: 700;
+  font-size: 1rem;
+}
+.grad-belt .gb-swatch {
+  width: 1.6rem;
+  height: 0.55rem;
+  border-radius: 4px;
+}
+.grad-belt .gb-swatch.branca   { background: #f5f5f0; border: 1px solid #d0d0c5; }
+.grad-belt .gb-swatch.azul     { background: #1d4ed8; }
+.grad-belt .gb-swatch.roxa     { background: #6b21a8; }
+.grad-belt .gb-swatch.marrom   { background: #78350f; }
+.grad-belt .gb-swatch.preta    { background: #0a0a0a; border: 1px solid #444; }
+.grad-belt .gb-graus {
+  display: inline-flex;
+  gap: 3px;
+  margin-left: 0.35rem;
+}
+.grad-belt .gb-grau-pip {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 50%;
+  background: var(--border);
+}
+.grad-belt .gb-grau-pip.on { background: var(--accent); }
+.grad-status {
+  font-size: 0.78rem;
+  color: var(--text-dim);
+}
+.grad-status .gs-label { color: var(--text-muted); }
+.grad-status .gs-sep { color: var(--text-muted); margin: 0 0.3rem; font-weight: 400; }
+
+.grad-bar-wrap { margin-top: 0.4rem; }
+.grad-bar {
+  position: relative;
+  height: 0.55rem;
+  background: var(--bg);
+  border-radius: 999px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+.grad-bar-fill {
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  background: linear-gradient(90deg, var(--accent) 0%, #fb923c 100%);
+  border-radius: 999px;
+  transition: width 0.4s ease;
+}
+.grad-bar-ticks {
+  position: absolute;
+  left: 0; right: 0; top: 0; bottom: 0;
+  display: flex;
+  pointer-events: none;
+}
+.grad-bar-tick {
+  flex: 1;
+  border-right: 1px solid var(--border);
+}
+.grad-bar-tick:last-child { border-right: 0; }
+.grad-bar-labels {
+  display: flex;
+  margin-top: 0.4rem;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+.grad-bar-labels .gbl {
+  flex: 1;
+  text-align: center;
+  border-right: 1px dashed transparent;
+}
+.grad-bar-labels .gbl.current { color: var(--accent); font-weight: 700; }
+.grad-bar-labels .gbl.next-promo { color: var(--text-dim); font-weight: 700; }
+
+.grad-foot {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 0.95rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid var(--border);
+}
+.grad-foot .gf-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+.grad-foot .gf-label {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.grad-foot .gf-value {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text);
+}
+.grad-foot .gf-value.accent { color: var(--accent); }
+.grad-foot .gf-extra {
+  font-size: 0.72rem;
+  color: var(--text-dim);
+}
+
+.grad-faixas-roadmap {
+  margin-top: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+.grad-faixa-step {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.55rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  font-size: 0.74rem;
+  color: var(--text-dim);
+}
+.grad-faixa-step.done { opacity: 0.55; }
+.grad-faixa-step.current {
+  border-color: var(--accent);
+  color: var(--text);
+  background: rgba(255,87,34,0.08);
+  font-weight: 700;
+}
+.grad-faixa-step .gfs-swatch {
+  width: 0.9rem;
+  height: 0.4rem;
+  border-radius: 3px;
+}
+.grad-faixa-step .gfs-swatch.branca   { background: #f5f5f0; border: 1px solid #d0d0c5; }
+.grad-faixa-step .gfs-swatch.azul     { background: #1d4ed8; }
+.grad-faixa-step .gfs-swatch.roxa     { background: #6b21a8; }
+.grad-faixa-step .gfs-swatch.marrom   { background: #78350f; }
+.grad-faixa-step .gfs-swatch.preta    { background: #0a0a0a; border: 1px solid #444; }
+.grad-faixa-step .gfs-arrow { color: var(--text-muted); }
+
+/* Trajetória por faixa dentro do card de graduação */
+.grad-belts {
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.55rem;
+}
+@media (max-width: 720px) {
+  .grad-belts { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+.gbc {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.25rem;
+  padding: 0.65rem 0.75rem;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  transition: all 0.15s;
+}
+.gbc.empty { opacity: 0.72; }
+.gbc.current {
+  border-color: var(--accent);
+  background: rgba(255, 87, 34, 0.06);
+}
+.gbc-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  width: 100%;
+}
+.gbc-swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+.gbc-swatch.branca   { background: #f5f5f5; border: 1px solid #999; }
+.gbc-swatch.azul     { background: #1e40af; }
+.gbc-swatch.roxa     { background: #6b21a8; }
+.gbc-swatch.marrom   { background: #78350f; }
+.gbc-swatch.preta    { background: #0a0a0a; border: 1px solid #444; }
+.gbc-name {
+  font-size: 0.78rem;
+  color: var(--text);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.gbc.current .gbc-name { color: var(--accent); }
+.gbc-count {
+  font-size: 1.7rem;
+  font-weight: 800;
+  color: var(--text);
+  line-height: 1;
+  margin: 0.15rem 0 0.3rem;
+}
+.gbc.empty .gbc-count { color: var(--text-muted); }
+.gbc-info-label {
+  font-size: 0.6rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 600;
+  margin-top: 0.3rem;
+}
+.gbc-info-label:first-of-type { margin-top: 0.15rem; }
+.gbc-extra {
+  font-size: 0.72rem;
+  color: var(--text);
+  line-height: 1.3;
+  font-weight: 500;
+}
+.gbc-extra.gbc-extra-dim {
+  color: var(--text-dim);
+  font-size: 0.68rem;
+  font-weight: 400;
+}
+

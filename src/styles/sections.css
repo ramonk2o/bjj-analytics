@@ -1,0 +1,348 @@
+/* ==================== v2 additions ==================== */
+
+/* Section subtitle */
+section h2 .meta.subtle {
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+/* Mini stat grid (smaller cards inside sections) */
+.mini-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 0.75rem;
+}
+.mini-stat {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.9rem 1rem;
+}
+.mini-stat .ms-label {
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+  margin-bottom: 0.35rem;
+}
+.mini-stat .ms-value {
+  font-size: 1.55rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+}
+.mini-stat .ms-value .ms-unit {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  font-weight: 500;
+  margin-left: 0.2rem;
+}
+.mini-stat .ms-extra {
+  font-size: 0.74rem;
+  color: var(--text-muted);
+  margin-top: 0.4rem;
+}
+.mini-stat.accent .ms-value { color: var(--accent); }
+
+/* Multi-training distribution (bar style) */
+.multi-grid {
+  display: grid;
+  grid-template-columns: 70px 1fr 70px;
+  gap: 0.5rem 1rem;
+  align-items: center;
+}
+.multi-label {
+  color: var(--text-dim);
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+.multi-bar {
+  height: 14px;
+  background: var(--bg-elevated);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.multi-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #ff8c5a, var(--accent));
+  border-radius: 4px;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.multi-count {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  font-size: 0.88rem;
+}
+.multi-count .h { color: var(--text-dim); font-weight: 500; font-size: 0.78rem; margin-left: 0.2rem; }
+
+/* Official vs unofficial proportion bar */
+
+/* Cumulative line chart */
+.cumulative-chart { width: 100%; min-height: 220px; }
+.cum-line { fill: none; stroke: var(--accent); stroke-width: 2; }
+.cum-line-all { fill: none; stroke: #6b7280; stroke-width: 1.5; stroke-dasharray: 4 3; opacity: 0.7; }
+.cum-area { fill: url(#cumGradient); opacity: 0.6; }
+.cum-axis { fill: var(--text-muted); font-size: 10px; }
+.cum-grid { stroke: var(--border); stroke-dasharray: 2 4; }
+.cum-marker {
+  fill: var(--accent);
+  stroke: var(--bg);
+  stroke-width: 2;
+}
+.cum-marker-label {
+  fill: var(--text);
+  font-size: 10px;
+  font-weight: 600;
+}
+.cum-projection { stroke: var(--accent); stroke-width: 1.5; opacity: 0.5; }
+.cum-milestone-line { stroke: var(--text-muted); stroke-width: 1; opacity: 0.35; }
+.cum-milestone-label { fill: var(--text-muted); font-size: 9px; font-weight: 600; }
+.cum-proj-dot {
+  fill: var(--accent);
+  stroke: var(--bg);
+  stroke-width: 2;
+  opacity: 0.6;
+}
+
+/* Streaks/gaps timeline */
+.timeline-svg { width: 100%; min-height: 90px; }
+.tl-streak { fill: var(--accent); }
+.tl-gap { fill: var(--border-strong); }
+.tl-axis { fill: var(--text-muted); font-size: 10px; }
+.timeline-legend {
+  display: flex;
+  gap: 1.2rem;
+  margin-top: 0.5rem;
+  font-size: 0.78rem;
+  color: var(--text-dim);
+}
+.timeline-legend .leg {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.timeline-legend .leg-swatch {
+  width: 14px;
+  height: 10px;
+  border-radius: 2px;
+}
+.timeline-legend .leg-swatch.streak { background: var(--accent); }
+.timeline-legend .leg-swatch.gap { background: var(--border-strong); }
+
+/* Badges / milestones */
+.badge-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1.4rem;
+}
+/* Collapsible sections */
+.collapsible-header {
+  cursor: pointer;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.collapse-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.6rem;
+  height: 1.6rem;
+  font-size: 1.1rem;
+  color: var(--text-dim);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  transition: transform 0.18s ease, background 0.15s;
+  transform: rotate(0deg);
+  flex-shrink: 0;
+}
+.collapse-toggle:hover { background: var(--card-hover); color: var(--text); }
+.collapsible.collapsed .collapse-toggle { transform: rotate(-90deg); }
+.collapsible-body {
+  position: relative;
+  max-height: none;
+  overflow: visible;
+  transition: max-height 0.3s ease;
+}
+.collapsible.collapsed .collapsible-body {
+  max-height: 0;
+  overflow: hidden;
+  padding: 0;
+}
+.collapsible .collapsible-fade {
+  display: none;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 8rem;
+  background: linear-gradient(to bottom, transparent, var(--card));
+  pointer-events: none;
+  border-radius: 0 0 var(--radius) var(--radius);
+}
+/* Only Marcos gets the fade preview */
+#badgesSection.collapsed .collapsible-body {
+  max-height: 16rem;
+}
+#badgesSection.collapsed .collapsible-fade {
+  display: block;
+}
+.badge-subsection-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+  margin-bottom: 0.7rem;
+}
+.badge-subsection-grid {
+  display: grid;
+  /* o grid-template-columns é setado inline via JS (chooseCols) pra evitar órfãs */
+  gap: 0.6rem;
+}
+.milestone.next {
+  border-color: var(--accent) !important;
+  background: linear-gradient(180deg, rgba(255,87,34,0.18) 0%, var(--bg-elevated) 70%);
+  opacity: 1;
+  filter: none;
+}
+.milestone.next .ms-icon { filter: none; }
+.milestone.next .ms-eta { color: var(--accent); font-style: normal; font-weight: 600; }
+.milestone {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.1rem 0.9rem;
+  text-align: center;
+  transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+.milestone:hover {
+  transform: translateY(-2px);
+  border-color: var(--border-strong);
+}
+.milestone .ms-icon {
+  font-size: 1.7rem;
+  margin-bottom: 0.45rem;
+  display: block;
+  line-height: 1;
+}
+.milestone .ms-name {
+  font-size: 0.82rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+.milestone .ms-desc {
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  line-height: 1.3;
+}
+.milestone.locked {
+  opacity: 0.45;
+  filter: grayscale(0.7);
+}
+.milestone.locked .ms-icon { filter: grayscale(1); }
+.milestone.unlocked {
+  border-color: var(--accent);
+  background: linear-gradient(180deg, rgba(255,87,34,0.12) 0%, var(--bg-elevated) 70%);
+}
+.milestone .ms-progress {
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  margin-top: 0.55rem;
+  overflow: hidden;
+}
+.milestone .ms-progress-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 2px;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.milestone .ms-eta {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  margin-top: 0.4rem;
+  font-style: italic;
+}
+.milestone.unlocked .ms-eta { color: #22c55e; font-style: normal; font-weight: 600; }
+
+/* DOW heatmap (Mon-Sun) */
+.dow-heatmap {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+.dow-cell {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.75rem 0.4rem;
+  text-align: center;
+  position: relative;
+  transition: all 0.2s;
+}
+.dow-cell:hover { border-color: var(--border-strong); }
+.dow-cell .dh-label {
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 600;
+}
+.dow-cell .dh-count {
+  font-size: 1.4rem;
+  font-weight: 800;
+  margin-top: 0.25rem;
+  line-height: 1;
+}
+.dow-cell .dh-pct {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin-top: 0.2rem;
+}
+.dow-cell .dh-unof {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.dow-cell.peak {
+  background: linear-gradient(180deg, rgba(255,87,34,0.18) 0%, var(--bg-elevated) 100%);
+  border-color: var(--accent);
+}
+.dow-cell.peak .dh-count { color: var(--accent); }
+
+/* Heatmap official/unofficial color override (v2) */
+.heatmap-cell.mixed.l1 { background: linear-gradient(135deg, rgba(255,87,34,0.35) 50%, rgba(120,120,130,0.4) 50%); }
+.heatmap-cell.mixed.l2 { background: linear-gradient(135deg, rgba(255,87,34,0.65) 50%, rgba(120,120,130,0.65) 50%); }
+.heatmap-cell.mixed.l3 { background: linear-gradient(135deg, var(--accent) 50%, #888892 50%); }
+.heatmap-cell.unofficial-only.l1 { background: rgba(120, 120, 130, 0.4); box-shadow: none; }
+.heatmap-cell.unofficial-only.l2 { background: rgba(120, 120, 130, 0.65); box-shadow: none; }
+.heatmap-cell.unofficial-only.l3 { background: #888892; box-shadow: none; }
+
+/* Heatmap legend v2 */
+.heatmap-legend.v2 {
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+.heatmap-legend .legend-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.heatmap-legend .swatch.unofficial-sample {
+  background: #888892;
+}
+.heatmap-legend .swatch.mixed-sample {
+  background: linear-gradient(135deg, rgba(255,87,34,0.65) 50%, rgba(120,120,130,0.65) 50%);
+}
+

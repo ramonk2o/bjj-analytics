@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Jiu-Jitsu Analytics</title>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div class="brand">
+      <h1>Jiu-Jitsu Analytics <span class="last-update" id="lastUpdate"></span></h1>
+      <div class="subtitle">
+        <span id="dateRange">—</span>
+        <span class="belt-pill" id="beltPill" style="display:none">
+          <span class="bp-swatch" id="beltPillSwatch"></span>
+          <span class="bp-name" id="beltPillName">—</span>
+          <span class="bp-sep">·</span>
+          <span class="bp-time" id="beltPillTime">—</span>
+        </span>
+      </div>
+    </div>
+    <div class="controls" id="controls" style="display:none">
+      <label class="cw-switch" title="Por padrão a semana atual fica de fora porque ainda não terminou — ligue pra incluir.">
+        <input type="checkbox" id="includeCurrentWeekToggle">
+        <span class="cw-track"><span class="cw-thumb"></span></span>
+        <span class="cw-label">Incluir semana atual</span>
+      </label>
+      <button id="refreshBtn" title="Atualizar agora">↻ Atualizar</button>
+      <button id="exportBtn" style="display:none">Exportar snapshot</button>
+      <button class="settings-btn" id="settingsBtn" title="Configurações">⚙</button>
+    </div>
+  </header>
+
+  <div id="setup" class="setup">
+    <div class="icon">🥋</div>
+    <h2>Bem-vindo</h2>
+    <p>Escolha a pasta <strong>jiu-jitsu</strong> pra começar. O relatório vai ler suas fotos das pastas das faixas e atualizar as estatísticas automaticamente conforme novos treinos forem aparecendo.</p>
+    <button class="primary" id="setupBtn">Escolher pasta</button>
+    <div class="note">As fotos não saem do seu computador — tudo roda local no navegador.</div>
+  </div>
+
+  <main id="main" style="display:none">
+    <section class="stats" style="background:transparent;border:0;padding:0;">
+      <div class="stat-card">
+        <div class="label">Total de treinos</div>
+        <div class="value"><span id="totalTrainings">0</span><span class="unof" id="totalUnofficialInline"></span></div>
+        <div class="extra" id="totalUnofficial"></div>
+      </div>
+      <div class="stat-card highlight-soft" id="nextMilestoneCard">
+        <div class="label">Próximo marco</div>
+        <div class="value" id="nextMilestoneRemaining">—</div>
+        <div class="extra" id="nextMilestoneExtra"></div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Maior streak</div>
+        <div class="value" id="longestStreak">0<span class="unit">sem</span></div>
+        <div class="extra" id="longestStreakDates"></div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Streak atual</div>
+        <div class="value" id="currentStreak">0<span class="unit">sem</span></div>
+        <div class="extra" id="currentStreakExtra"></div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Média semanal</div>
+        <div class="value" id="weeklyAvg">0</div>
+        <div class="extra" id="weeklyAvgExtra">treinos / semana</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Último treino</div>
+        <div class="value" id="lastTraining">—</div>
+        <div class="extra" id="lastTrainingAgo"></div>
+      </div>
+    </section>
+
+    <section id="graduationSection">
+      <h2>
+        <span id="graduationTitle">Evolução</span>
+      </h2>
+      <div id="graduationContainer"></div>
+    </section>
+
+    <section id="treinosSection">
+      <h2>
+        Treinos
+        <span style="display:inline-flex;align-items:center;gap:0.5rem;margin-left:auto;margin-right:0.75rem">
+          <span class="heatmap-filter" id="treinosFilter">
+            <button class="hf-pill active" data-tfilter="all">Todos</button>
+            <button class="hf-pill" data-tfilter="official">Oficiais</button>
+            <button class="hf-pill" data-tfilter="unofficial">Não oficiais</button>
+          </span>
+        </span>
+      </h2>
+      <div>
+
+      <div class="subsection-title">Calendário de treinos <span class="meta" id="heatmapMeta"></span></div>
+      <div class="heatmap-wrapper">
+        <div id="heatmapMonths" class="heatmap-months"></div>
+        <div class="heatmap" id="heatmap"></div>
+      </div>
+      <div class="heatmap-legend v2">
+        <div class="legend-group">
+          <span>Oficial:</span>
+          <div class="swatches">
+            <div class="swatch" style="background:#1f1f24"></div>
+            <div class="swatch" style="background:rgba(255, 87, 34, 0.35)"></div>
+            <div class="swatch" style="background:rgba(255, 87, 34, 0.65)"></div>
+            <div class="swatch" style="background:#ff5722"></div>
+          </div>
+        </div>
+        <div class="legend-group">
+          <span>Só não oficial:</span>
+          <div class="swatch unofficial-sample"></div>
+        </div>
+        <div class="legend-group">
+          <span>Misto:</span>
+          <div class="swatch mixed-sample"></div>
+        </div>
+      </div>
+
+      <div class="section-divider"></div>
+
+      <div class="subsection-title">Volume e frequência <span class="meta subtle">médias e marcos do período</span></div>
+      <div class="mini-stats" id="volumeMetrics"></div>
+
+      <div class="section-divider"></div>
+
+      <div class="charts-row">
+        <div class="charts-row-item">
+          <div class="subsection-title">Atividade <span class="meta subtle" id="activityMeta">do início aos dias de hoje</span></div>
+          <div class="activity-chart-wrap">
+            <div class="activity-chart-header">
+              <span>treinos por semana</span>
+              <span class="trend-pill" id="activityTrend">—</span>
+            </div>
+            <div class="activity-scroll" id="activityScroll">
+              <svg class="activity-svg" id="activitySvg"></svg>
+            </div>
+          </div>
+        </div>
+        <div class="charts-row-item">
+          <div class="subsection-title">Treinos acumulados</div>
+          <div class="cumulative-chart-wrap">
+            <svg class="cumulative-chart" id="cumulativeChart" viewBox="0 0 600 240" preserveAspectRatio="none"></svg>
+          </div>
+        </div>
+      </div>
+      <div class="activity-stats" id="activityStats" style="display:none"></div>
+      </div>
+    </section>
+
+    <section class="collapsible" id="badgesSection">
+      <h2 class="collapsible-header" data-target="badgeGrid">
+        Marcos
+        <span class="collapse-toggle" aria-label="Expandir/colapsar">▾</span>
+      </h2>
+      <div class="collapsible-body">
+        <div class="badge-grid" id="badgeGrid"></div>
+        <div class="collapsible-fade"></div>
+      </div>
+    </section>
+
+    <section id="analiseSection">
+      <h2>Análise detalhada</h2>
+      <div>
+
+      <div class="subsection-title">Sequências e consistência <span class="meta subtle" id="streakSubtitle">streaks de semanas com 2+ treinos</span></div>
+      <div class="mini-stats" id="consistencyMetrics" style="margin-bottom:1.5rem"></div>
+      <svg class="timeline-svg" id="timelineSvg" viewBox="0 0 600 90" preserveAspectRatio="none"></svg>
+      <div class="timeline-legend">
+        <div class="leg"><span class="leg-swatch streak"></span><span id="streakLegStreak">streak (semanas seguidas com 2+ treinos)</span></div>
+        <div class="leg"><span class="leg-swatch gap"></span><span id="streakLegGap">gap (semanas com menos de 2 treinos)</span></div>
+      </div>
+
+      <div class="section-divider"></div>
+
+      <div class="subsection-title">Treinos por dia da semana <span class="meta subtle">distribuição e dia mais forte</span></div>
+      <div class="dow-heatmap" id="dowHeatmap"></div>
+
+      <div class="section-divider"></div>
+
+      <div class="charts-row" style="margin-top:0">
+        <div class="charts-row-item">
+          <div class="subsection-title">Comparação proporcional</div>
+          <div class="dow-grid" id="dowGrid"></div>
+        </div>
+        <div class="charts-row-item">
+          <div class="subsection-title">Dias com múltiplos treinos <span class="meta subtle">quando você dobra ou triplica</span></div>
+          <div class="mini-stats" id="multiSummary" style="margin-bottom:1rem"></div>
+          <div class="multi-grid" id="multiGrid"></div>
+        </div>
+      </div>
+      </div>
+    </section>
+
+    <footer>
+      Clique em "Atualizar" pra re-escanear as pastas
+      <div style="margin-top:0.5rem;font-size:0.7rem;color:var(--text-muted)">Criado por Ramon K. · 2026</div>
+    </footer>
+  </main>
+</div>
+
+<div class="tooltip" id="tooltip">
+  <div class="tip-text"></div>
+  <div class="tip-imgs"></div>
+  <div class="tip-hint"></div>
+</div>
+<div class="settings-overlay" id="settingsOverlay">
+  <div class="settings-panel">
+    <h2>Configurações</h2>
+
+    <div class="settings-group">
+      <div class="settings-group-title">Aulas por grau (× 5 = total para subir de faixa)</div>
+      <div class="settings-row">
+        <label>Branca</label>
+        <input type="number" id="cfgBranca" min="1" max="200">
+      </div>
+      <div class="settings-row">
+        <label>Azul</label>
+        <input type="number" id="cfgAzul" min="1" max="200">
+      </div>
+      <div class="settings-row">
+        <label>Roxa</label>
+        <input type="number" id="cfgRoxa" min="1" max="200">
+      </div>
+      <div class="settings-row">
+        <label>Marrom</label>
+        <input type="number" id="cfgMarrom" min="1" max="200">
+      </div>
+    </div>
+
+    <div class="settings-group">
+      <div class="settings-group-title">Média semanal</div>
+      <div class="settings-row">
+        <label>Período considerado</label>
+        <select id="cfgAvgPeriod">
+          <option value="3m">Últimos 3 meses</option>
+          <option value="6m">Últimos 6 meses</option>
+          <option value="12m">Últimos 12 meses</option>
+          <option value="all">Todo o histórico</option>
+        </select>
+      </div>
+      <div class="settings-hint">Afeta as médias semanal/mensal, a baseline do gráfico de atividade e os ETAs por média geral.</div>
+    </div>
+
+    <div class="settings-group">
+      <div class="settings-group-title">Streak semanal</div>
+      <div class="settings-row">
+        <label>Mín. treinos/semana p/ contar streak</label>
+        <input type="number" id="cfgStreakMin" min="1" max="7">
+      </div>
+      <div class="settings-hint">Semanas com menos treinos que este valor quebram o streak.</div>
+    </div>
+
+    <div class="settings-group">
+      <div class="settings-group-title">Grau atual</div>
+      <div class="settings-row">
+        <label>Grau na faixa atual</label>
+        <select id="cfgGrauOverride">
+          <option value="auto">Automático (por aulas)</option>
+          <option value="0">Sem grau</option>
+          <option value="1">1º grau</option>
+          <option value="2">2º grau</option>
+          <option value="3">3º grau</option>
+          <option value="4">4º grau</option>
+        </select>
+      </div>
+      <div class="settings-hint">Use se seu grau real difere do calculado por aulas.</div>
+    </div>
+
+    <div class="settings-actions">
+      <button id="settingsCancel">Cancelar</button>
+      <button class="primary" id="settingsSave">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<div class="lightbox-overlay" id="lightbox">
+  <button class="lightbox-close" id="lightboxClose">&times;</button>
+  <div class="lightbox-header" id="lightboxHeader"></div>
+  <div class="lightbox-gallery" id="lightboxGallery"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+<script type="module" src="/src/main.ts"></script>
+</body>
+</html>

@@ -1,0 +1,20 @@
+{
+  "name": "bjj-analytics",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Local-only training analytics for a jiu-jitsu photo folder",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "typescript": "^7.0.2",
+    "vite": "^8.3.5",
+    "vite-plugin-singlefile": "^2.3.4",
+    "vitest": "^5.0.5"
+  }
+}
