@@ -1,0 +1,4333 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Jiu-Jitsu Analytics</title>
+<style>
+  :root {
+    --bg: #0a0a0c;
+    --bg-elevated: #131316;
+    --card: #16161a;
+    --card-hover: #1c1c22;
+    --border: #26262d;
+    --border-strong: #3a3a44;
+    --text: #f0f0f2;
+    --text-dim: #8a8a94;
+    --text-muted: #5a5a64;
+    --accent: #ff5722;
+    --accent-dim: #ff572233;
+    --branca: #f5f5f5;
+    --azul: #2563eb;
+    --roxa: #7c3aed;
+    --marrom: #92400e;
+    --preta: #18181b;
+    --shadow: 0 4px 24px rgba(0,0,0,0.4);
+    --radius: 14px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--bg); color: var(--text); }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", system-ui, sans-serif;
+    min-height: 100vh;
+    padding: 2.5rem 2rem 4rem;
+    line-height: 1.45;
+    -webkit-font-smoothing: antialiased;
+  }
+  .container { max-width: 1200px; margin: 0 auto; }
+
+  /* Header */
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 2.5rem;
+  }
+  .brand h1 {
+    font-size: 2.2rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    background: linear-gradient(135deg, #fff 0%, #aaa 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .brand .subtitle {
+    color: var(--text-dim);
+    font-size: 0.95rem;
+    margin-top: 0.25rem;
+  }
+  .controls {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  button {
+    background: var(--card);
+    color: var(--text);
+    border: 1px solid var(--border);
+    padding: 0.55rem 1rem;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  button:hover { background: var(--card-hover); border-color: var(--border-strong); }
+  button.primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: white;
+  }
+  button.primary:hover { background: #ff6b3d; border-color: #ff6b3d; }
+  .last-update {
+    font-size: 0.6rem;
+    color: var(--text-muted);
+    font-weight: 400;
+    vertical-align: middle;
+    margin-left: 0.5rem;
+  }
+
+  /* Switch global "incluir semana atual" */
+  .cw-switch {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    user-select: none;
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.45rem 0.7rem;
+    transition: all 0.15s;
+  }
+  .cw-switch:hover { border-color: var(--border-strong); color: var(--text); }
+  .cw-switch input { position: absolute; opacity: 0; pointer-events: none; }
+  .cw-track {
+    position: relative;
+    display: inline-block;
+    width: 26px;
+    height: 14px;
+    background: #2a2a31;
+    border-radius: 999px;
+    transition: background 0.18s;
+  }
+  .cw-thumb {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 10px;
+    height: 10px;
+    background: var(--text-dim);
+    border-radius: 50%;
+    transition: all 0.18s;
+  }
+  .cw-switch input:checked ~ .cw-track { background: var(--accent); }
+  .cw-switch input:checked ~ .cw-track .cw-thumb { left: 14px; background: white; }
+  .cw-switch input:checked ~ .cw-label { color: var(--text); }
+
+  /* Setup screen */
+  .setup {
+    text-align: center;
+    padding: 5rem 2rem;
+    max-width: 520px;
+    margin: 4rem auto;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+  .setup .icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+  }
+  .setup h2 {
+    font-size: 1.4rem;
+    margin-bottom: 0.75rem;
+    font-weight: 700;
+  }
+  .setup p {
+    color: var(--text-dim);
+    margin-bottom: 1.75rem;
+    font-size: 0.95rem;
+  }
+  .setup button {
+    padding: 0.85rem 1.75rem;
+    font-size: 0.95rem;
+  }
+  .setup .note {
+    margin-top: 1.5rem;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+  }
+
+  /* Stat grid — 6 cards, sempre em uma linha em desktop */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+  }
+  @media (max-width: 1100px) {
+    .stats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  }
+  .stat-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.1rem 1rem;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+    min-width: 0;
+  }
+  .stat-card:hover {
+    border-color: var(--border-strong);
+    transform: translateY(-2px);
+  }
+  .stat-card .label {
+    font-size: 0.72rem;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.4rem;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .stat-card .value {
+    font-size: 1.85rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .stat-card .unit {
+    font-size: 0.78rem;
+    color: var(--text-dim);
+    margin-left: 0.18rem;
+    font-weight: 500;
+  }
+  .stat-card .unof {
+    font-size: 0.85rem;
+    color: var(--text-dim);
+    margin-left: 0.35rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+  .extra .unof-extra {
+    color: var(--text-dim);
+    font-weight: 500;
+  }
+  .stat-card .extra {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    margin-top: 0.5rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .stat-card.highlight {
+    background: linear-gradient(135deg, var(--accent) 0%, #c2410c 100%);
+    border-color: transparent;
+    color: white;
+  }
+  .stat-card.highlight .label { color: rgba(255,255,255,0.85); }
+  .stat-card.highlight .extra { color: rgba(255,255,255,0.8); }
+
+  /* Sections */
+  section {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 2rem;
+    margin-bottom: 1.25rem;
+  }
+  section h2 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  section h2 .meta {
+    font-size: 0.78rem;
+    color: var(--text-dim);
+    font-weight: 500;
+  }
+
+  /* Section divider (between subsections inside a merged section) */
+  .section-divider {
+    border-top: 1px solid var(--border);
+    margin: 2rem 0;
+  }
+
+  /* Belt progression */
+  .belts { display: flex; flex-direction: column; gap: 0.85rem; }
+  .belt-row {
+    display: grid;
+    grid-template-columns: 100px 1fr 90px;
+    gap: 1rem;
+    align-items: center;
+  }
+  .belt-tag {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    font-size: 0.92rem;
+    font-weight: 600;
+  }
+  .belt-swatch {
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    border: 1px solid var(--border-strong);
+    flex-shrink: 0;
+  }
+  .belt-swatch.branca { background: var(--branca); }
+  .belt-swatch.azul { background: var(--azul); }
+  .belt-swatch.roxa { background: var(--roxa); }
+  .belt-swatch.marrom { background: var(--marrom); }
+  .belt-swatch.preta { background: var(--preta); border-color: var(--border-strong); }
+  .belt-bar {
+    height: 12px;
+    background: var(--bg-elevated);
+    border-radius: 6px;
+    overflow: hidden;
+    position: relative;
+  }
+  .belt-bar-fill {
+    height: 100%;
+    border-radius: 6px;
+    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .belt-bar-fill.branca { background: linear-gradient(90deg, #d4d4d4, #f5f5f5); }
+  .belt-bar-fill.azul { background: linear-gradient(90deg, #1d4ed8, #3b82f6); }
+  .belt-bar-fill.roxa { background: linear-gradient(90deg, #6d28d9, #a78bfa); }
+  .belt-bar-fill.marrom { background: linear-gradient(90deg, #78350f, #b45309); }
+  .belt-bar-fill.preta { background: linear-gradient(90deg, #18181b, #52525b); }
+  .belt-count {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    font-size: 0.92rem;
+    font-weight: 600;
+  }
+  .belt-count .h { color: var(--text-dim); font-weight: 500; font-size: 0.82rem; margin-left: 0.25rem; }
+  .belt-row.current .belt-tag { color: var(--accent); }
+
+  /* Trend cards */
+  .trend-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 1rem;
+  }
+  .trend-card {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.1rem 1rem;
+    transition: all 0.2s;
+  }
+  .trend-card.current {
+    border-color: var(--accent);
+    background: linear-gradient(180deg, rgba(255,87,34,0.08) 0%, var(--bg-elevated) 100%);
+  }
+  .trend-card .trend-label {
+    font-size: 0.72rem;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 600;
+    margin-bottom: 0.15rem;
+  }
+  .trend-card .trend-range {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    margin-bottom: 0.5rem;
+  }
+  .trend-card .trend-value {
+    font-size: 1.9rem;
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    line-height: 1.05;
+  }
+  .trend-card .trend-value .trend-unit {
+    font-size: 0.85rem;
+    color: var(--text-dim);
+    font-weight: 500;
+    margin-left: 0.2rem;
+  }
+  .trend-card .trend-meta-row {
+    font-size: 0.76rem;
+    color: var(--text-dim);
+    margin-top: 0.4rem;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+  .trend-arrow {
+    font-weight: 700;
+    font-size: 0.85rem;
+    line-height: 1;
+  }
+  .trend-up { color: #22c55e; }
+  .trend-down { color: #ef4444; }
+  .trend-stable { color: var(--text-muted); }
+
+  /* Heatmap */
+  .heatmap-wrapper { overflow-x: auto; padding-bottom: 0.5rem; }
+  .heatmap-wrapper::-webkit-scrollbar { height: 8px; }
+  .heatmap-wrapper::-webkit-scrollbar-track { background: var(--bg-elevated); border-radius: 4px; }
+  .heatmap-wrapper::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 4px; }
+  .heatmap {
+    display: grid;
+    grid-template-rows: repeat(7, 1fr);
+    grid-auto-flow: column;
+    gap: 3px;
+    min-height: 100px;
+  }
+  .heatmap-cell {
+    width: 13px;
+    height: 13px;
+    border-radius: 3px;
+    background: #1f1f24;
+    transition: transform 0.15s;
+    cursor: pointer;
+    position: relative;
+  }
+  .heatmap-cell:hover { transform: scale(1.4); z-index: 5; }
+  .heatmap-cell.empty { background: transparent; }
+  .heatmap-cell.l1 { background: rgba(255, 87, 34, 0.35); }
+  .heatmap-cell.l2 { background: rgba(255, 87, 34, 0.65); }
+  .heatmap-cell.l3 { background: var(--accent); }
+  .heatmap-cell.unofficial {
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.4);
+  }
+  .heatmap-months {
+    display: flex;
+    margin-bottom: 6px;
+    color: var(--text-muted);
+    font-size: 0.72rem;
+  }
+  .heatmap-legend {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    justify-content: flex-end;
+  }
+  .heatmap-legend .swatches { display: flex; gap: 3px; }
+  .heatmap-legend .swatch {
+    width: 13px;
+    height: 13px;
+    border-radius: 3px;
+  }
+
+  /* Tooltip */
+  .tooltip {
+    position: absolute;
+    background: #1f1f26;
+    color: var(--text);
+    padding: 0.55rem 0.7rem;
+    border-radius: 8px;
+    font-size: 0.78rem;
+    pointer-events: none;
+    z-index: 100;
+    box-shadow: 0 8px 28px rgba(0,0,0,0.6);
+    border: 1px solid var(--border-strong);
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.12s;
+    transform: translate(-50%, 0);
+  }
+  .tooltip.show { opacity: 1; }
+  .tooltip .tip-text { white-space: nowrap; }
+  .tooltip .tip-imgs {
+    display: flex;
+    gap: 4px;
+    margin-top: 0.45rem;
+    justify-content: center;
+  }
+  .tooltip .tip-img {
+    width: 130px;
+    height: 130px;
+    border-radius: 5px;
+    object-fit: cover;
+    background: var(--bg-elevated);
+    display: block;
+  }
+  .tooltip .tip-img.loading {
+    background: linear-gradient(90deg, #1f1f26 0%, #2a2a32 50%, #1f1f26 100%);
+    background-size: 200% 100%;
+    animation: shimmer 1.2s linear infinite;
+  }
+  @keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+  .tooltip .tip-hint {
+    color: var(--text-muted);
+    font-size: 0.7rem;
+    margin-top: 0.35rem;
+    text-align: center;
+    white-space: nowrap;
+  }
+  .heatmap-cell.has-data { cursor: pointer; }
+  .heatmap-cell.no-data { cursor: default; }
+
+  /* Heatmap filter pills */
+  .heatmap-filter {
+    display: inline-flex;
+    gap: 0;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-left: auto;
+  }
+  .hf-pill {
+    padding: 0.25rem 0.6rem;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: none;
+    letter-spacing: 0;
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .hf-pill:hover { color: var(--text-dim); background: var(--card-hover); }
+  .hf-pill.active { background: var(--accent); color: white; }
+
+  /* Monthly chart */
+  .chart-wrap { display: flex; gap: 2rem; align-items: stretch; }
+  .chart-svg-wrap { flex: 1; min-width: 0; overflow-x: auto; }
+  .chart-svg { display: block; min-width: 400px; }
+  .chart-bar { fill: var(--accent); transition: opacity 0.15s; }
+  .chart-bar:hover, .chart-bar-unof:hover { opacity: 0.85; }
+  .chart-bar.unofficial { fill: rgba(255, 87, 34, 0.4); }
+  .chart-bar-unof { fill: #6b7280; transition: opacity 0.15s; }
+  .chart-axis { fill: var(--text-muted); font-size: 10px; }
+  .chart-grid { stroke: var(--border); stroke-dasharray: 2 4; }
+
+  /* Two col layout */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  @media (max-width: 800px) {
+    .two-col { grid-template-columns: 1fr; }
+  }
+
+  /* Day of week */
+  .dow-grid {
+    display: grid;
+    grid-template-columns: 60px 1fr 50px;
+    gap: 0.5rem 1rem;
+    align-items: center;
+  }
+  .dow-label { color: var(--text-dim); font-size: 0.85rem; }
+  .dow-bar {
+    height: 14px;
+    background: var(--bg-elevated);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .dow-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), #ff8c5a);
+    border-radius: 4px;
+    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .dow-count { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; font-size: 0.88rem; }
+
+  /* Recent list */
+  .recent-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    max-height: 280px;
+    overflow-y: auto;
+  }
+  .recent-list::-webkit-scrollbar { width: 6px; }
+  .recent-list::-webkit-scrollbar-track { background: transparent; }
+  .recent-list::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 3px; }
+  .recent-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.65rem 0.85rem;
+    background: var(--bg-elevated);
+    border-radius: 8px;
+    font-size: 0.86rem;
+    border-left: 3px solid var(--accent);
+  }
+  .recent-item.unofficial {
+    border-left-color: var(--text-muted);
+    opacity: 0.75;
+  }
+  .recent-item .date { font-weight: 600; }
+  .recent-item .info {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    color: var(--text-dim);
+    font-size: 0.78rem;
+  }
+  .badge {
+    font-size: 0.68rem;
+    padding: 0.15rem 0.45rem;
+    border-radius: 4px;
+    background: var(--border);
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+  }
+  .badge.unofficial { background: #3a2620; color: #ff8c5a; }
+
+  .empty-state {
+    text-align: center;
+    padding: 2rem;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+  }
+
+  /* Footer */
+  footer {
+    text-align: center;
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 0.78rem;
+  }
+
+  /* Number animation */
+  @keyframes pop {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+  }
+  .pop { animation: pop 0.3s ease-out; }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    background: var(--card);
+    border: 1px solid var(--border-strong);
+    padding: 0.75rem 1.25rem;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    box-shadow: var(--shadow);
+    transform: translateY(120%);
+    opacity: 0;
+    pointer-events: none;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s;
+    z-index: 1000;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; pointer-events: auto; }
+
+  /* Lightbox */
+  .lightbox-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    z-index: 3000;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    gap: 1rem;
+  }
+  .lightbox-overlay.open { display: flex; }
+  .lightbox-header {
+    color: var(--text);
+    font-size: 0.85rem;
+    text-align: center;
+  }
+  .lightbox-gallery {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    max-width: 95vw;
+    max-height: 75vh;
+    overflow: auto;
+  }
+  .lightbox-gallery img {
+    max-height: 70vh;
+    max-width: min(45vw, 600px);
+    border-radius: 8px;
+    object-fit: contain;
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+  .lightbox-gallery img:hover { transform: scale(1.02); }
+  .lightbox-gallery img.solo { max-width: min(85vw, 900px); }
+  .lightbox-close {
+    position: absolute;
+    top: 1rem;
+    right: 1.5rem;
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    font-size: 2rem;
+    cursor: pointer;
+    line-height: 1;
+  }
+  .lightbox-close:hover { color: var(--text); }
+
+  /* ==================== v2 additions ==================== */
+
+  /* Section subtitle */
+  section h2 .meta.subtle {
+    font-weight: 400;
+    color: var(--text-muted);
+  }
+
+  /* Mini stat grid (smaller cards inside sections) */
+  .mini-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 0.75rem;
+  }
+  .mini-stat {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.9rem 1rem;
+  }
+  .mini-stat .ms-label {
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 600;
+    margin-bottom: 0.35rem;
+  }
+  .mini-stat .ms-value {
+    font-size: 1.55rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.05;
+  }
+  .mini-stat .ms-value .ms-unit {
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    font-weight: 500;
+    margin-left: 0.2rem;
+  }
+  .mini-stat .ms-extra {
+    font-size: 0.74rem;
+    color: var(--text-muted);
+    margin-top: 0.4rem;
+  }
+  .mini-stat.accent .ms-value { color: var(--accent); }
+
+  /* Multi-training distribution (bar style) */
+  .multi-grid {
+    display: grid;
+    grid-template-columns: 70px 1fr 70px;
+    gap: 0.5rem 1rem;
+    align-items: center;
+  }
+  .multi-label {
+    color: var(--text-dim);
+    font-size: 0.85rem;
+    font-weight: 500;
+  }
+  .multi-bar {
+    height: 14px;
+    background: var(--bg-elevated);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .multi-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #ff8c5a, var(--accent));
+    border-radius: 4px;
+    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .multi-count {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    font-size: 0.88rem;
+  }
+  .multi-count .h { color: var(--text-dim); font-weight: 500; font-size: 0.78rem; margin-left: 0.2rem; }
+
+  /* Official vs unofficial proportion bar */
+
+  /* Cumulative line chart */
+  .cumulative-chart { width: 100%; min-height: 220px; }
+  .cum-line { fill: none; stroke: var(--accent); stroke-width: 2; }
+  .cum-line-all { fill: none; stroke: #6b7280; stroke-width: 1.5; stroke-dasharray: 4 3; opacity: 0.7; }
+  .cum-area { fill: url(#cumGradient); opacity: 0.6; }
+  .cum-axis { fill: var(--text-muted); font-size: 10px; }
+  .cum-grid { stroke: var(--border); stroke-dasharray: 2 4; }
+  .cum-marker {
+    fill: var(--accent);
+    stroke: var(--bg);
+    stroke-width: 2;
+  }
+  .cum-marker-label {
+    fill: var(--text);
+    font-size: 10px;
+    font-weight: 600;
+  }
+  .cum-projection { stroke: var(--accent); stroke-width: 1.5; opacity: 0.5; }
+  .cum-milestone-line { stroke: var(--text-muted); stroke-width: 1; opacity: 0.35; }
+  .cum-milestone-label { fill: var(--text-muted); font-size: 9px; font-weight: 600; }
+  .cum-proj-dot {
+    fill: var(--accent);
+    stroke: var(--bg);
+    stroke-width: 2;
+    opacity: 0.6;
+  }
+
+  /* Streaks/gaps timeline */
+  .timeline-svg { width: 100%; min-height: 90px; }
+  .tl-streak { fill: var(--accent); }
+  .tl-gap { fill: var(--border-strong); }
+  .tl-axis { fill: var(--text-muted); font-size: 10px; }
+  .timeline-legend {
+    display: flex;
+    gap: 1.2rem;
+    margin-top: 0.5rem;
+    font-size: 0.78rem;
+    color: var(--text-dim);
+  }
+  .timeline-legend .leg {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .timeline-legend .leg-swatch {
+    width: 14px;
+    height: 10px;
+    border-radius: 2px;
+  }
+  .timeline-legend .leg-swatch.streak { background: var(--accent); }
+  .timeline-legend .leg-swatch.gap { background: var(--border-strong); }
+
+  /* Badges / milestones */
+  .badge-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 1.4rem;
+  }
+  /* Collapsible sections */
+  .collapsible-header {
+    cursor: pointer;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .collapse-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.6rem;
+    height: 1.6rem;
+    font-size: 1.1rem;
+    color: var(--text-dim);
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    transition: transform 0.18s ease, background 0.15s;
+    transform: rotate(0deg);
+    flex-shrink: 0;
+  }
+  .collapse-toggle:hover { background: var(--card-hover); color: var(--text); }
+  .collapsible.collapsed .collapse-toggle { transform: rotate(-90deg); }
+  .collapsible-body {
+    position: relative;
+    max-height: none;
+    overflow: visible;
+    transition: max-height 0.3s ease;
+  }
+  .collapsible.collapsed .collapsible-body {
+    max-height: 0;
+    overflow: hidden;
+    padding: 0;
+  }
+  .collapsible .collapsible-fade {
+    display: none;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 8rem;
+    background: linear-gradient(to bottom, transparent, var(--card));
+    pointer-events: none;
+    border-radius: 0 0 var(--radius) var(--radius);
+  }
+  /* Only Marcos gets the fade preview */
+  #badgesSection.collapsed .collapsible-body {
+    max-height: 16rem;
+  }
+  #badgesSection.collapsed .collapsible-fade {
+    display: block;
+  }
+  .badge-subsection-title {
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-dim);
+    margin-bottom: 0.7rem;
+  }
+  .badge-subsection-grid {
+    display: grid;
+    /* o grid-template-columns é setado inline via JS (chooseCols) pra evitar órfãs */
+    gap: 0.6rem;
+  }
+  .milestone.next {
+    border-color: var(--accent) !important;
+    background: linear-gradient(180deg, rgba(255,87,34,0.18) 0%, var(--bg-elevated) 70%);
+    opacity: 1;
+    filter: none;
+  }
+  .milestone.next .ms-icon { filter: none; }
+  .milestone.next .ms-eta { color: var(--accent); font-style: normal; font-weight: 600; }
+  .milestone {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.1rem 0.9rem;
+    text-align: center;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .milestone:hover {
+    transform: translateY(-2px);
+    border-color: var(--border-strong);
+  }
+  .milestone .ms-icon {
+    font-size: 1.7rem;
+    margin-bottom: 0.45rem;
+    display: block;
+    line-height: 1;
+  }
+  .milestone .ms-name {
+    font-size: 0.82rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+  }
+  .milestone .ms-desc {
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    line-height: 1.3;
+  }
+  .milestone.locked {
+    opacity: 0.45;
+    filter: grayscale(0.7);
+  }
+  .milestone.locked .ms-icon { filter: grayscale(1); }
+  .milestone.unlocked {
+    border-color: var(--accent);
+    background: linear-gradient(180deg, rgba(255,87,34,0.12) 0%, var(--bg-elevated) 70%);
+  }
+  .milestone .ms-progress {
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    margin-top: 0.55rem;
+    overflow: hidden;
+  }
+  .milestone .ms-progress-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 2px;
+    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .milestone .ms-eta {
+    font-size: 0.68rem;
+    color: var(--text-muted);
+    margin-top: 0.4rem;
+    font-style: italic;
+  }
+  .milestone.unlocked .ms-eta { color: #22c55e; font-style: normal; font-weight: 600; }
+
+  /* DOW heatmap (Mon-Sun) */
+  .dow-heatmap {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+  }
+  .dow-cell {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.75rem 0.4rem;
+    text-align: center;
+    position: relative;
+    transition: all 0.2s;
+  }
+  .dow-cell:hover { border-color: var(--border-strong); }
+  .dow-cell .dh-label {
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-weight: 600;
+  }
+  .dow-cell .dh-count {
+    font-size: 1.4rem;
+    font-weight: 800;
+    margin-top: 0.25rem;
+    line-height: 1;
+  }
+  .dow-cell .dh-pct {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    margin-top: 0.2rem;
+  }
+  .dow-cell .dh-unof {
+    font-size: 0.85rem;
+    color: var(--text-dim);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+  .dow-cell.peak {
+    background: linear-gradient(180deg, rgba(255,87,34,0.18) 0%, var(--bg-elevated) 100%);
+    border-color: var(--accent);
+  }
+  .dow-cell.peak .dh-count { color: var(--accent); }
+
+  /* Heatmap official/unofficial color override (v2) */
+  .heatmap-cell.mixed.l1 { background: linear-gradient(135deg, rgba(255,87,34,0.35) 50%, rgba(120,120,130,0.4) 50%); }
+  .heatmap-cell.mixed.l2 { background: linear-gradient(135deg, rgba(255,87,34,0.65) 50%, rgba(120,120,130,0.65) 50%); }
+  .heatmap-cell.mixed.l3 { background: linear-gradient(135deg, var(--accent) 50%, #888892 50%); }
+  .heatmap-cell.unofficial-only.l1 { background: rgba(120, 120, 130, 0.4); box-shadow: none; }
+  .heatmap-cell.unofficial-only.l2 { background: rgba(120, 120, 130, 0.65); box-shadow: none; }
+  .heatmap-cell.unofficial-only.l3 { background: #888892; box-shadow: none; }
+
+  /* Heatmap legend v2 */
+  .heatmap-legend.v2 {
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-top: 1rem;
+  }
+  .heatmap-legend .legend-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .heatmap-legend .swatch.unofficial-sample {
+    background: #888892;
+  }
+  .heatmap-legend .swatch.mixed-sample {
+    background: linear-gradient(135deg, rgba(255,87,34,0.65) 50%, rgba(120,120,130,0.65) 50%);
+  }
+
+  /* Faixa atual — inline no subtitle do header (compacto) */
+  .belt-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.92rem;
+    font-weight: 500;
+    color: var(--text);
+    margin-left: 0.6rem;
+    padding-left: 0.7rem;
+    border-left: 1px solid var(--border-strong);
+  }
+  .belt-pill .bp-swatch {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+    border: 1px solid var(--border-strong);
+    flex-shrink: 0;
+  }
+  .belt-pill .bp-swatch.branca { background: var(--branca); }
+  .belt-pill .bp-swatch.azul { background: var(--azul); }
+  .belt-pill .bp-swatch.roxa { background: var(--roxa); }
+  .belt-pill .bp-swatch.marrom { background: var(--marrom); }
+  .belt-pill .bp-swatch.preta { background: var(--preta); }
+  .belt-pill .bp-name { font-weight: 700; color: var(--text); }
+  .belt-pill .bp-sep { color: var(--text-muted); margin: 0 0.05rem; }
+  .belt-pill .bp-time { color: var(--text-dim); font-weight: 500; font-variant-numeric: tabular-nums; }
+  .brand .subtitle {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  /* "Próximo marco" soft highlight */
+  .stat-card.highlight-soft {
+    background: linear-gradient(180deg, rgba(255,87,34,0.14) 0%, var(--card) 70%);
+    border-color: rgba(255,87,34,0.45);
+  }
+  .stat-card.highlight-soft .value { color: var(--accent); }
+  .stat-card.highlight-soft .label { color: var(--accent); }
+
+  /* Graduação */
+  .grad-card {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1rem 1.1rem 1.15rem;
+  }
+  .grad-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 0.85rem;
+    flex-wrap: wrap;
+  }
+  .grad-belt {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-weight: 700;
+    font-size: 1rem;
+  }
+  .grad-belt .gb-swatch {
+    width: 1.6rem;
+    height: 0.55rem;
+    border-radius: 4px;
+  }
+  .grad-belt .gb-swatch.branca   { background: #f5f5f0; border: 1px solid #d0d0c5; }
+  .grad-belt .gb-swatch.azul     { background: #1d4ed8; }
+  .grad-belt .gb-swatch.roxa     { background: #6b21a8; }
+  .grad-belt .gb-swatch.marrom   { background: #78350f; }
+  .grad-belt .gb-swatch.preta    { background: #0a0a0a; border: 1px solid #444; }
+  .grad-belt .gb-graus {
+    display: inline-flex;
+    gap: 3px;
+    margin-left: 0.35rem;
+  }
+  .grad-belt .gb-grau-pip {
+    width: 0.45rem;
+    height: 0.45rem;
+    border-radius: 50%;
+    background: var(--border);
+  }
+  .grad-belt .gb-grau-pip.on { background: var(--accent); }
+  .grad-status {
+    font-size: 0.78rem;
+    color: var(--text-dim);
+  }
+  .grad-status .gs-label { color: var(--text-muted); }
+  .grad-status .gs-sep { color: var(--text-muted); margin: 0 0.3rem; font-weight: 400; }
+
+  .grad-bar-wrap { margin-top: 0.4rem; }
+  .grad-bar {
+    position: relative;
+    height: 0.55rem;
+    background: var(--bg);
+    border-radius: 999px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  .grad-bar-fill {
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    background: linear-gradient(90deg, var(--accent) 0%, #fb923c 100%);
+    border-radius: 999px;
+    transition: width 0.4s ease;
+  }
+  .grad-bar-ticks {
+    position: absolute;
+    left: 0; right: 0; top: 0; bottom: 0;
+    display: flex;
+    pointer-events: none;
+  }
+  .grad-bar-tick {
+    flex: 1;
+    border-right: 1px solid var(--border);
+  }
+  .grad-bar-tick:last-child { border-right: 0; }
+  .grad-bar-labels {
+    display: flex;
+    margin-top: 0.4rem;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+  }
+  .grad-bar-labels .gbl {
+    flex: 1;
+    text-align: center;
+    border-right: 1px dashed transparent;
+  }
+  .grad-bar-labels .gbl.current { color: var(--accent); font-weight: 700; }
+  .grad-bar-labels .gbl.next-promo { color: var(--text-dim); font-weight: 700; }
+
+  .grad-foot {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-top: 0.95rem;
+    padding-top: 0.85rem;
+    border-top: 1px solid var(--border);
+  }
+  .grad-foot .gf-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+  }
+  .grad-foot .gf-label {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .grad-foot .gf-value {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .grad-foot .gf-value.accent { color: var(--accent); }
+  .grad-foot .gf-extra {
+    font-size: 0.72rem;
+    color: var(--text-dim);
+  }
+
+  .grad-faixas-roadmap {
+    margin-top: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+  }
+  .grad-faixa-step {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.3rem 0.55rem;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    font-size: 0.74rem;
+    color: var(--text-dim);
+  }
+  .grad-faixa-step.done { opacity: 0.55; }
+  .grad-faixa-step.current {
+    border-color: var(--accent);
+    color: var(--text);
+    background: rgba(255,87,34,0.08);
+    font-weight: 700;
+  }
+  .grad-faixa-step .gfs-swatch {
+    width: 0.9rem;
+    height: 0.4rem;
+    border-radius: 3px;
+  }
+  .grad-faixa-step .gfs-swatch.branca   { background: #f5f5f0; border: 1px solid #d0d0c5; }
+  .grad-faixa-step .gfs-swatch.azul     { background: #1d4ed8; }
+  .grad-faixa-step .gfs-swatch.roxa     { background: #6b21a8; }
+  .grad-faixa-step .gfs-swatch.marrom   { background: #78350f; }
+  .grad-faixa-step .gfs-swatch.preta    { background: #0a0a0a; border: 1px solid #444; }
+  .grad-faixa-step .gfs-arrow { color: var(--text-muted); }
+
+  /* Trajetória por faixa dentro do card de graduação */
+  .grad-belts {
+    margin-top: 1.5rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--border);
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 0.55rem;
+  }
+  @media (max-width: 720px) {
+    .grad-belts { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  }
+  .gbc {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+    padding: 0.65rem 0.75rem;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    transition: all 0.15s;
+  }
+  .gbc.empty { opacity: 0.72; }
+  .gbc.current {
+    border-color: var(--accent);
+    background: rgba(255, 87, 34, 0.06);
+  }
+  .gbc-row {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    width: 100%;
+  }
+  .gbc-swatch {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+    flex-shrink: 0;
+  }
+  .gbc-swatch.branca   { background: #f5f5f5; border: 1px solid #999; }
+  .gbc-swatch.azul     { background: #1e40af; }
+  .gbc-swatch.roxa     { background: #6b21a8; }
+  .gbc-swatch.marrom   { background: #78350f; }
+  .gbc-swatch.preta    { background: #0a0a0a; border: 1px solid #444; }
+  .gbc-name {
+    font-size: 0.78rem;
+    color: var(--text);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .gbc.current .gbc-name { color: var(--accent); }
+  .gbc-count {
+    font-size: 1.7rem;
+    font-weight: 800;
+    color: var(--text);
+    line-height: 1;
+    margin: 0.15rem 0 0.3rem;
+  }
+  .gbc.empty .gbc-count { color: var(--text-muted); }
+  .gbc-info-label {
+    font-size: 0.6rem;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-weight: 600;
+    margin-top: 0.3rem;
+  }
+  .gbc-info-label:first-of-type { margin-top: 0.15rem; }
+  .gbc-extra {
+    font-size: 0.72rem;
+    color: var(--text);
+    line-height: 1.3;
+    font-weight: 500;
+  }
+  .gbc-extra.gbc-extra-dim {
+    color: var(--text-dim);
+    font-size: 0.68rem;
+    font-weight: 400;
+  }
+
+  /* Charts side-by-side row */
+  .charts-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+    align-items: start;
+  }
+  .charts-row-item { min-width: 0; }
+  @media (max-width: 720px) {
+    .charts-row { grid-template-columns: 1fr; }
+  }
+
+  /* Sparkline (Atividade recente) */
+  .activity-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+    gap: 1.5rem;
+    align-items: stretch;
+  }
+  @media (max-width: 720px) {
+    .activity-grid { grid-template-columns: 1fr; }
+  }
+  .activity-chart-wrap {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem 1rem 0.75rem;
+    display: flex;
+    flex-direction: column;
+    min-width: 0; /* permite que o card respeite a coluna do grid e não estoure */
+    position: relative;
+  }
+  .activity-scroll-shadow {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 2.5rem;
+    pointer-events: none;
+    background: linear-gradient(to right, var(--bg-elevated), transparent);
+    border-radius: 10px 0 0 10px;
+    opacity: 0;
+    transition: opacity 0.2s;
+    z-index: 1;
+  }
+  .activity-scroll-shadow.visible { opacity: 1; }
+  .activity-chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.6rem;
+    font-size: 0.78rem;
+    color: var(--text-dim);
+  }
+  .trend-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.22rem 0.55rem;
+    border-radius: 999px;
+    font-size: 0.74rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .trend-pill.up { background: rgba(34,197,94,0.15); color: #22c55e; }
+  .trend-pill.down { background: rgba(239,68,68,0.15); color: #ef4444; }
+  .trend-pill.flat { background: var(--border); color: var(--text-dim); }
+  .activity-scroll {
+    flex: 1;
+    overflow-x: auto;
+    overflow-y: hidden;
+    min-height: 200px;
+    /* Scrollbar discreta */
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-strong) transparent;
+  }
+  .activity-scroll::-webkit-scrollbar { height: 8px; }
+  .activity-scroll::-webkit-scrollbar-track { background: transparent; }
+  .activity-scroll::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 999px; }
+  .activity-svg { display: block; height: 200px; }
+  .activity-bar { fill: var(--accent); opacity: 0.55; transition: opacity 0.15s; }
+  .activity-bar:hover { opacity: 1; }
+  .activity-bar.current { opacity: 1; }
+  .activity-bar-unof { fill: #6b7280; opacity: 0.55; transition: opacity 0.15s; }
+  .activity-bar-unof:hover { opacity: 1; }
+  .activity-bar-unof.current { opacity: 1; }
+  .activity-baseline { stroke: var(--text-muted); stroke-dasharray: 3 3; stroke-width: 1; }
+  .activity-axis { fill: var(--text-muted); font-size: 9px; }
+  .activity-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+  }
+  .activity-stat {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.85rem 1rem;
+  }
+  .activity-stat .as-label {
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 600;
+  }
+  .activity-stat .as-value {
+    font-size: 1.5rem;
+    font-weight: 800;
+    margin-top: 0.25rem;
+    line-height: 1.05;
+  }
+  .activity-stat .as-extra {
+    font-size: 0.74rem;
+    color: var(--text-muted);
+    margin-top: 0.2rem;
+  }
+  .activity-stat .as-unof {
+    font-size: 0.85rem;
+    color: var(--text-dim);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+  .activity-stat.current { border-color: var(--accent); }
+  .activity-stat.current .as-value { color: var(--accent); }
+
+  /* Subsection title (used inside merged sections) */
+  .subsection-title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-top: 0;
+    margin-bottom: 1rem;
+  }
+  .subsection-title .meta {
+    font-size: 0.72rem;
+    font-weight: 400;
+    text-transform: none;
+    letter-spacing: 0;
+    color: var(--text-muted);
+  }
+
+  /* Settings panel */
+  .settings-btn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    font-size: 1.1rem;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: border-color 0.2s, color 0.2s;
+  }
+  .settings-btn:hover { border-color: var(--border-strong); color: var(--text); }
+
+  .settings-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 2000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+  }
+  .settings-overlay.open { display: flex; }
+
+  .settings-panel {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius);
+    padding: 2rem;
+    width: 90%;
+    max-width: 480px;
+    max-height: 85vh;
+    overflow-y: auto;
+    box-shadow: 0 12px 48px rgba(0,0,0,0.5);
+  }
+  .settings-panel h2 {
+    font-size: 1.1rem;
+    margin-bottom: 1.5rem;
+    color: var(--text);
+  }
+  .settings-group {
+    margin-bottom: 1.5rem;
+  }
+  .settings-group-title {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-dim);
+    font-weight: 600;
+    margin-bottom: 0.6rem;
+  }
+  .settings-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.5rem 0;
+  }
+  .settings-row + .settings-row {
+    border-top: 1px solid var(--border);
+  }
+  .settings-row label {
+    font-size: 0.82rem;
+    color: var(--text);
+  }
+  .settings-row input[type="number"],
+  .settings-row select {
+    background: var(--card);
+    border: 1px solid var(--border-strong);
+    color: var(--text);
+    border-radius: 6px;
+    padding: 0.35rem 0.6rem;
+    font-size: 0.82rem;
+    width: 5rem;
+    text-align: center;
+  }
+  .settings-row select { width: auto; min-width: 5rem; }
+  .settings-row input[type="number"]:focus,
+  .settings-row select:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+  .settings-actions {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: flex-end;
+    margin-top: 1.5rem;
+  }
+  .settings-actions button {
+    padding: 0.5rem 1.2rem;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid var(--border-strong);
+    background: var(--card);
+    color: var(--text);
+    transition: background 0.2s;
+  }
+  .settings-actions button:hover { background: var(--card-hover); }
+  .settings-actions button.primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: white;
+  }
+  .settings-actions button.primary:hover { opacity: 0.9; }
+  .settings-hint {
+    font-size: 0.68rem;
+    color: var(--text-muted);
+    margin-top: 0.2rem;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div class="brand">
+      <h1>Jiu-Jitsu Analytics <span class="last-update" id="lastUpdate"></span></h1>
+      <div class="subtitle">
+        <span id="dateRange">—</span>
+        <span class="belt-pill" id="beltPill" style="display:none">
+          <span class="bp-swatch" id="beltPillSwatch"></span>
+          <span class="bp-name" id="beltPillName">—</span>
+          <span class="bp-sep">·</span>
+          <span class="bp-time" id="beltPillTime">—</span>
+        </span>
+      </div>
+    </div>
+    <div class="controls" id="controls" style="display:none">
+      <label class="cw-switch" title="Por padrão a semana atual fica de fora porque ainda não terminou — ligue pra incluir.">
+        <input type="checkbox" id="includeCurrentWeekToggle">
+        <span class="cw-track"><span class="cw-thumb"></span></span>
+        <span class="cw-label">Incluir semana atual</span>
+      </label>
+      <button id="refreshBtn" title="Atualizar agora">↻ Atualizar</button>
+      <button id="exportBtn" style="display:none" onclick="exportSnapshot()">Exportar snapshot</button>
+      <button class="settings-btn" id="settingsBtn" title="Configurações">⚙</button>
+    </div>
+  </header>
+
+  <div id="setup" class="setup">
+    <div class="icon">🥋</div>
+    <h2>Bem-vindo</h2>
+    <p>Escolha a pasta <strong>jiu-jitsu</strong> pra começar. O relatório vai ler suas fotos das pastas das faixas e atualizar as estatísticas automaticamente conforme novos treinos forem aparecendo.</p>
+    <button class="primary" id="setupBtn">Escolher pasta</button>
+    <div class="note">As fotos não saem do seu computador — tudo roda local no navegador.</div>
+  </div>
+
+  <main id="main" style="display:none">
+    <section class="stats" style="background:transparent;border:0;padding:0;">
+      <div class="stat-card">
+        <div class="label">Total de treinos</div>
+        <div class="value"><span id="totalTrainings">0</span><span class="unof" id="totalUnofficialInline"></span></div>
+        <div class="extra" id="totalUnofficial"></div>
+      </div>
+      <div class="stat-card highlight-soft" id="nextMilestoneCard">
+        <div class="label">Próximo marco</div>
+        <div class="value" id="nextMilestoneRemaining">—</div>
+        <div class="extra" id="nextMilestoneExtra"></div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Maior streak</div>
+        <div class="value" id="longestStreak">0<span class="unit">sem</span></div>
+        <div class="extra" id="longestStreakDates"></div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Streak atual</div>
+        <div class="value" id="currentStreak">0<span class="unit">sem</span></div>
+        <div class="extra" id="currentStreakExtra"></div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Média semanal</div>
+        <div class="value" id="weeklyAvg">0</div>
+        <div class="extra" id="weeklyAvgExtra">treinos / semana</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Último treino</div>
+        <div class="value" id="lastTraining">—</div>
+        <div class="extra" id="lastTrainingAgo"></div>
+      </div>
+    </section>
+
+    <section id="graduationSection">
+      <h2>
+        <span id="graduationTitle">Evolução</span>
+      </h2>
+      <div id="graduationContainer"></div>
+    </section>
+
+    <section id="treinosSection">
+      <h2>
+        Treinos
+        <span style="display:inline-flex;align-items:center;gap:0.5rem;margin-left:auto;margin-right:0.75rem">
+          <span class="heatmap-filter" id="treinosFilter">
+            <button class="hf-pill active" data-tfilter="all">Todos</button>
+            <button class="hf-pill" data-tfilter="official">Oficiais</button>
+            <button class="hf-pill" data-tfilter="unofficial">Não oficiais</button>
+          </span>
+        </span>
+      </h2>
+      <div>
+
+      <div class="subsection-title">Calendário de treinos <span class="meta" id="heatmapMeta"></span></div>
+      <div class="heatmap-wrapper">
+        <div id="heatmapMonths" class="heatmap-months"></div>
+        <div class="heatmap" id="heatmap"></div>
+      </div>
+      <div class="heatmap-legend v2">
+        <div class="legend-group">
+          <span>Oficial:</span>
+          <div class="swatches">
+            <div class="swatch" style="background:#1f1f24"></div>
+            <div class="swatch" style="background:rgba(255, 87, 34, 0.35)"></div>
+            <div class="swatch" style="background:rgba(255, 87, 34, 0.65)"></div>
+            <div class="swatch" style="background:#ff5722"></div>
+          </div>
+        </div>
+        <div class="legend-group">
+          <span>Só não oficial:</span>
+          <div class="swatch unofficial-sample"></div>
+        </div>
+        <div class="legend-group">
+          <span>Misto:</span>
+          <div class="swatch mixed-sample"></div>
+        </div>
+      </div>
+
+      <div class="section-divider"></div>
+
+      <div class="subsection-title">Volume e frequência <span class="meta subtle">médias e marcos do período</span></div>
+      <div class="mini-stats" id="volumeMetrics"></div>
+
+      <div class="section-divider"></div>
+
+      <div class="charts-row">
+        <div class="charts-row-item">
+          <div class="subsection-title">Atividade <span class="meta subtle" id="activityMeta">do início aos dias de hoje</span></div>
+          <div class="activity-chart-wrap">
+            <div class="activity-chart-header">
+              <span>treinos por semana</span>
+              <span class="trend-pill" id="activityTrend">—</span>
+            </div>
+            <div class="activity-scroll" id="activityScroll">
+              <svg class="activity-svg" id="activitySvg"></svg>
+            </div>
+          </div>
+        </div>
+        <div class="charts-row-item">
+          <div class="subsection-title">Treinos acumulados</div>
+          <div class="cumulative-chart-wrap">
+            <svg class="cumulative-chart" id="cumulativeChart" viewBox="0 0 600 240" preserveAspectRatio="none"></svg>
+          </div>
+        </div>
+      </div>
+      <div class="activity-stats" id="activityStats" style="display:none"></div>
+      </div>
+    </section>
+
+    <section class="collapsible" id="badgesSection">
+      <h2 class="collapsible-header" data-target="badgeGrid">
+        Marcos
+        <span class="collapse-toggle" aria-label="Expandir/colapsar">▾</span>
+      </h2>
+      <div class="collapsible-body">
+        <div class="badge-grid" id="badgeGrid"></div>
+        <div class="collapsible-fade"></div>
+      </div>
+    </section>
+
+    <section id="analiseSection">
+      <h2>Análise detalhada</h2>
+      <div>
+
+      <div class="subsection-title">Sequências e consistência <span class="meta subtle" id="streakSubtitle">streaks de semanas com 2+ treinos</span></div>
+      <div class="mini-stats" id="consistencyMetrics" style="margin-bottom:1.5rem"></div>
+      <svg class="timeline-svg" id="timelineSvg" viewBox="0 0 600 90" preserveAspectRatio="none"></svg>
+      <div class="timeline-legend">
+        <div class="leg"><span class="leg-swatch streak"></span><span id="streakLegStreak">streak (semanas seguidas com 2+ treinos)</span></div>
+        <div class="leg"><span class="leg-swatch gap"></span><span id="streakLegGap">gap (semanas com menos de 2 treinos)</span></div>
+      </div>
+
+      <div class="section-divider"></div>
+
+      <div class="subsection-title">Treinos por dia da semana <span class="meta subtle">distribuição e dia mais forte</span></div>
+      <div class="dow-heatmap" id="dowHeatmap"></div>
+
+      <div class="section-divider"></div>
+
+      <div class="charts-row" style="margin-top:0">
+        <div class="charts-row-item">
+          <div class="subsection-title">Comparação proporcional</div>
+          <div class="dow-grid" id="dowGrid"></div>
+        </div>
+        <div class="charts-row-item">
+          <div class="subsection-title">Dias com múltiplos treinos <span class="meta subtle">quando você dobra ou triplica</span></div>
+          <div class="mini-stats" id="multiSummary" style="margin-bottom:1rem"></div>
+          <div class="multi-grid" id="multiGrid"></div>
+        </div>
+      </div>
+      </div>
+    </section>
+
+    <footer>
+      Clique em "Atualizar" pra re-escanear as pastas
+      <div style="margin-top:0.5rem;font-size:0.7rem;color:var(--text-muted)">Criado por Ramon K. · 2026</div>
+    </footer>
+  </main>
+</div>
+
+<div class="tooltip" id="tooltip">
+  <div class="tip-text"></div>
+  <div class="tip-imgs"></div>
+  <div class="tip-hint"></div>
+</div>
+<div class="settings-overlay" id="settingsOverlay">
+  <div class="settings-panel">
+    <h2>Configurações</h2>
+
+    <div class="settings-group">
+      <div class="settings-group-title">Aulas por grau (× 5 = total para subir de faixa)</div>
+      <div class="settings-row">
+        <label>Branca</label>
+        <input type="number" id="cfgBranca" min="1" max="200">
+      </div>
+      <div class="settings-row">
+        <label>Azul</label>
+        <input type="number" id="cfgAzul" min="1" max="200">
+      </div>
+      <div class="settings-row">
+        <label>Roxa</label>
+        <input type="number" id="cfgRoxa" min="1" max="200">
+      </div>
+      <div class="settings-row">
+        <label>Marrom</label>
+        <input type="number" id="cfgMarrom" min="1" max="200">
+      </div>
+    </div>
+
+    <div class="settings-group">
+      <div class="settings-group-title">Média semanal</div>
+      <div class="settings-row">
+        <label>Período considerado</label>
+        <select id="cfgAvgPeriod">
+          <option value="3m">Últimos 3 meses</option>
+          <option value="6m">Últimos 6 meses</option>
+          <option value="12m">Últimos 12 meses</option>
+          <option value="all">Todo o histórico</option>
+        </select>
+      </div>
+      <div class="settings-hint">Afeta as médias semanal/mensal, a baseline do gráfico de atividade e os ETAs por média geral.</div>
+    </div>
+
+    <div class="settings-group">
+      <div class="settings-group-title">Streak semanal</div>
+      <div class="settings-row">
+        <label>Mín. treinos/semana p/ contar streak</label>
+        <input type="number" id="cfgStreakMin" min="1" max="7">
+      </div>
+      <div class="settings-hint">Semanas com menos treinos que este valor quebram o streak.</div>
+    </div>
+
+    <div class="settings-group">
+      <div class="settings-group-title">Grau atual</div>
+      <div class="settings-row">
+        <label>Grau na faixa atual</label>
+        <select id="cfgGrauOverride">
+          <option value="auto">Automático (por aulas)</option>
+          <option value="0">Sem grau</option>
+          <option value="1">1º grau</option>
+          <option value="2">2º grau</option>
+          <option value="3">3º grau</option>
+          <option value="4">4º grau</option>
+        </select>
+      </div>
+      <div class="settings-hint">Use se seu grau real difere do calculado por aulas.</div>
+    </div>
+
+    <div class="settings-actions">
+      <button id="settingsCancel">Cancelar</button>
+      <button class="primary" id="settingsSave">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<div class="lightbox-overlay" id="lightbox">
+  <button class="lightbox-close" id="lightboxClose">&times;</button>
+  <div class="lightbox-header" id="lightboxHeader"></div>
+  <div class="lightbox-gallery" id="lightboxGallery"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ========== Config ==========
+const BELTS = [
+  { id: '00-branca', name: 'Branca', class: 'branca' },
+  { id: '01-azul',   name: 'Azul',   class: 'azul' },
+  { id: '02-roxa',   name: 'Roxa',   class: 'roxa' },
+  { id: '03-marrom', name: 'Marrom', class: 'marrom' },
+  { id: '04-preta',  name: 'Preta',  class: 'preta' },
+];
+// Regras de graduação: aulas por grau em cada faixa (defaults)
+// Cada faixa tem 4 graus (após 4 graus, próxima graduação = subir de faixa em 5×N aulas)
+const BELT_RULES_DEFAULTS = {
+  branca: 30, azul: 65, roxa: 75, marrom: 85, preta: 0
+};
+const BELT_RULES = {
+  branca: { aulasPerGrau: 30 },
+  azul:   { aulasPerGrau: 65 },
+  roxa:   { aulasPerGrau: 75 },
+  marrom: { aulasPerGrau: 85 },
+  preta:  { aulasPerGrau: 0 },
+};
+let STREAK_MIN_TRAININGS = 2; // mínimo de treinos/semana p/ contar como "semana treinada"
+let GRAU_OVERRIDE = 'auto'; // 'auto' | '0' | '1' | '2' | '3' | '4'
+let WEEKLY_AVG_PERIOD = '3m'; // '3m' | '6m' | '12m' | 'all' — período considerado nas médias semanais/mensais
+
+// Carrega configurações do localStorage
+(function loadSettings() {
+  try {
+    const saved = localStorage.getItem('jja-settings');
+    if (!saved) return;
+    const cfg = JSON.parse(saved);
+    if (cfg.beltRules) {
+      for (const k of Object.keys(cfg.beltRules)) {
+        if (BELT_RULES[k]) BELT_RULES[k].aulasPerGrau = cfg.beltRules[k];
+      }
+    }
+    if (cfg.streakMin) STREAK_MIN_TRAININGS = cfg.streakMin;
+    if (cfg.grauOverride !== undefined) GRAU_OVERRIDE = cfg.grauOverride;
+    if (cfg.weeklyAvgPeriod) WEEKLY_AVG_PERIOD = cfg.weeklyAvgPeriod;
+  } catch {}
+})();
+
+// Helpers do período configurável (afetam médias e cálculos que usam weeklyAvg)
+function getPeriodStartTime() {
+  if (WEEKLY_AVG_PERIOD === 'all') return null;
+  const months = { '3m': 3, '6m': 6, '12m': 12 }[WEEKLY_AVG_PERIOD] || 3;
+  const d = new Date();
+  d.setMonth(d.getMonth() - months);
+  d.setHours(0, 0, 0, 0);
+  return d.getTime();
+}
+function getPeriodLabel() {
+  return {
+    '3m':  'últimos 3 meses',
+    '6m':  'últimos 6 meses',
+    '12m': 'últimos 12 meses',
+    'all': 'todo o histórico',
+  }[WEEKLY_AVG_PERIOD] || 'últimos 3 meses';
+}
+function getPeriodShort() {
+  return {
+    '3m':  '3m',
+    '6m':  '6m',
+    '12m': '12m',
+    'all': 'tudo',
+  }[WEEKLY_AVG_PERIOD] || '3m';
+}
+// Ex: 2025-06-27.jpg, 2025-06-27-a.jpg, 2025-11-23_.jpg, 2025-11-23-a_.jpg
+const FILE_RE = /^(\d{4})-(\d{2})-(\d{2})(-[a-z])?(_)?\.(jpe?g|png)$/i;
+const DOW_NAMES = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+const MONTH_NAMES = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+const DB_NAME = 'jiu-jitsu-report';
+const STORE = 'handles';
+
+// ========== State ==========
+let dirHandle = null;
+let trainings = []; // {date: Date, dateStr, belt, official, suffix, filename, fileHandle}
+const urlCache = new Map(); // chave: "beltId|filename" -> object URL (limpo a cada re-scan)
+let trainingsByDay = new Map(); // dateStr -> [trainings] (filtrados, atualizado em render)
+let treinosFilterMode = 'all'; // 'all' | 'official' | 'unofficial'
+let effectiveTrainings = []; // trainings filtrados pelo switch de semana atual
+// Toggle global: por padrão a semana atual fica DE FORA (porque ainda não terminou).
+// Quando ligado, inclui em TODOS os dados.
+let includeCurrentWeek = false;
+try {
+  if (localStorage.getItem('includeCurrentWeek') === '1') includeCurrentWeek = true;
+} catch {}
+
+// Helpers de "semana ISO" (segunda → domingo) — usados em vários lugares
+function weekStartOf(d) {
+  const dd = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const dayNum = (dd.getDay() + 6) % 7; // Mon=0
+  dd.setDate(dd.getDate() - dayNum);
+  dd.setHours(0,0,0,0);
+  return dd;
+}
+function currentWeekStartTime() {
+  return weekStartOf(new Date()).getTime();
+}
+
+// ========== IndexedDB for handle persistence ==========
+function idb() {
+  return new Promise((resolve, reject) => {
+    const r = indexedDB.open(DB_NAME, 1);
+    r.onupgradeneeded = () => r.result.createObjectStore(STORE);
+    r.onsuccess = () => resolve(r.result);
+    r.onerror = () => reject(r.error);
+  });
+}
+async function saveHandle(h) {
+  const db = await idb();
+  return new Promise((res, rej) => {
+    const tx = db.transaction(STORE, 'readwrite');
+    tx.objectStore(STORE).put(h, 'dir');
+    tx.oncomplete = () => res();
+    tx.onerror = () => rej(tx.error);
+  });
+}
+async function loadHandle() {
+  try {
+    const db = await idb();
+    return new Promise((res, rej) => {
+      const tx = db.transaction(STORE, 'readonly');
+      const req = tx.objectStore(STORE).get('dir');
+      req.onsuccess = () => res(req.result || null);
+      req.onerror = () => rej(req.error);
+    });
+  } catch { return null; }
+}
+
+// ========== UI helpers ==========
+const $ = (id) => document.getElementById(id);
+function showToast(msg) {
+  const t = $('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// ========== Folder selection ==========
+async function pickFolder() {
+  if (!window.showDirectoryPicker) {
+    alert('Seu navegador não suporta acesso a pastas. Use o Chrome, Edge ou Brave.');
+    return;
+  }
+  try {
+    const h = await window.showDirectoryPicker({ id: 'jiu-jitsu', mode: 'read' });
+    dirHandle = h;
+    await saveHandle(h);
+    await activate();
+  } catch(e) {
+    if (e.name !== 'AbortError') console.error(e);
+  }
+}
+
+async function ensurePermission(h) {
+  const opts = { mode: 'read' };
+  if ((await h.queryPermission(opts)) === 'granted') return true;
+  if ((await h.requestPermission(opts)) === 'granted') return true;
+  return false;
+}
+
+// ========== Scan ==========
+async function scan() {
+  if (!dirHandle) return;
+  // Revogar objectURLs do cache anterior para liberar memória
+  urlCache.forEach(url => URL.revokeObjectURL(url));
+  urlCache.clear();
+  const found = [];
+  for (const belt of BELTS) {
+    let folder;
+    try { folder = await dirHandle.getDirectoryHandle(belt.id); }
+    catch { continue; }
+    for await (const entry of folder.values()) {
+      if (entry.kind !== 'file') continue;
+      const m = entry.name.match(FILE_RE);
+      if (!m) continue;
+      const dateStr = `${m[1]}-${m[2]}-${m[3]}`;
+      const suffix = m[4] ? m[4].slice(1) : ''; // 'a', 'b', etc — separa treinos do mesmo dia
+      found.push({
+        date: new Date(`${dateStr}T00:00:00`),
+        dateStr,
+        belt,
+        suffix,
+        official: !m[5],
+        filename: entry.name,
+        fileHandle: entry,
+      });
+    }
+  }
+  // Dedupe — cada treino é único por (faixa, data, sufixo, oficial).
+  // Sufixo permite múltiplos treinos no mesmo dia (-a, -b...).
+  const seen = new Set();
+  trainings = found
+    .sort((a, b) => a.date - b.date || a.suffix.localeCompare(b.suffix))
+    .filter(t => {
+      const k = `${t.belt.id}|${t.dateStr}|${t.suffix}|${t.official}`;
+      if (seen.has(k)) return false;
+      seen.add(k);
+      return true;
+    });
+  render();
+  $('lastUpdate').textContent = `Atualizado ${new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`;
+}
+
+// ========== Activate ==========
+async function activate() {
+  if (!await ensurePermission(dirHandle)) {
+    showToast('Permissão necessária para ler a pasta');
+    return;
+  }
+  $('setup').style.display = 'none';
+  $('main').style.display = 'block';
+  $('controls').style.display = 'flex';
+  $('exportBtn').style.display = '';
+  await scan();
+}
+
+// ========== Stats ==========
+// Cache por render cycle — evita recalcular stats idênticos quando render() chama
+// computeStats múltiplas vezes com as mesmas listas.
+const _statsCache = new Map(); // key -> result
+let _statsCacheGeneration = 0;
+function _statsCacheKey(list, allList) {
+  // Chave baseada em referência + tamanho + geração do cache
+  return `${_statsCacheGeneration}|${list.length}|${allList.length}|${list === allList ? '1' : '0'}|${list.length ? list[0].dateStr : ''}|${list.length ? list[list.length-1].dateStr : ''}`;
+}
+function invalidateStatsCache() {
+  _statsCacheGeneration++;
+  _statsCache.clear();
+}
+function computeStats(list, allList) {
+  if (!list.length) return null;
+  // allList = lista completa (oficial + não oficial) usada APENAS pra streaks/gaps
+  // — o filtro de "oficial" não deve criar gaps falsos quando houve treino fora da academia.
+  if (!allList || !allList.length) allList = list;
+
+  // Cache hit?
+  const cacheKey = _statsCacheKey(list, allList);
+  if (_statsCache.has(cacheKey)) return _statsCache.get(cacheKey);
+
+  // === Filtro de semana atual: aplicado a TUDO ===
+  const thisWeekStartTime = currentWeekStartTime();
+  const filterCurrentWeek = (arr) => includeCurrentWeek
+    ? arr
+    : arr.filter(t => weekStartOf(t.date).getTime() < thisWeekStartTime);
+  list = filterCurrentWeek(list);
+  allList = filterCurrentWeek(allList);
+  if (!list.length) return null;
+
+  const dates = list.map(t => t.dateStr).sort();
+  const uniqueDays = new Set(dates).size;
+
+  // (sem streaks por dia — agora tudo por semana)
+  const dateSet = new Set(dates);
+  const allDates = [...dateSet].sort();
+  const lastDate = new Date(allDates[allDates.length - 1] + 'T00:00:00');
+  const todayMid = new Date(); todayMid.setHours(0,0,0,0);
+  const daysSinceLast = Math.round((todayMid - lastDate) / 86400000);
+
+  // ===== Streaks por SEMANA =====
+  // Semana = ISO week (segunda a domingo).
+  // Regra: só conta como "semana treinada" pra streak quem teve >= STREAK_MIN_TRAININGS treinos.
+  // Gap = semanas consecutivas SEM atingir 2 treinos entre duas semanas treinadas.
+  // IMPORTANTE: streaks usam allList (oficial + não oficial). Por padrão, ignora a semana atual
+  // (ainda em andamento) — o usuário pode ligar o switch pra incluí-la.
+  function fmtWeekRange(d) {
+    const end = new Date(d);
+    end.setDate(end.getDate() + 6);
+    const dd = (n) => String(n).padStart(2,'0');
+    return `${dd(d.getDate())}/${dd(d.getMonth()+1)} – ${dd(end.getDate())}/${dd(end.getMonth()+1)}`;
+  }
+  // Conta treinos por semana e marca como "semana treinada" só >= 2
+  const trainingsByWeek = new Map(); // weekStartTime -> count
+  allList.forEach(t => {
+    const k = weekStartOf(t.date).getTime();
+    trainingsByWeek.set(k, (trainingsByWeek.get(k) || 0) + 1);
+  });
+  const trainedWeekTimes = new Set();
+  trainingsByWeek.forEach((cnt, k) => {
+    if (cnt >= STREAK_MIN_TRAININGS) trainedWeekTimes.add(k);
+  });
+  const sortedWeekTimes = [...trainedWeekTimes].sort((a,b) => a - b);
+
+  // Build week streaks/gaps (somente entre semanas qualificadas com >= STREAK_MIN_TRAININGS treinos)
+  const weekStreaks = []; // {start: Date, end: Date, length: int}
+  const weekGaps = [];    // {beforeEnd: Date, afterStart: Date, length: int (weeks gap)}
+  let longestWeekStreak = 0, longestWeekStart = null, longestWeekEnd = null;
+  if (sortedWeekTimes.length) {
+    let wSegStart = sortedWeekTimes[0], wSegEnd = sortedWeekTimes[0], wCur = 1;
+    for (let i = 0; i < sortedWeekTimes.length; i++) {
+      if (i === 0) {
+        wCur = 1; wSegStart = sortedWeekTimes[0]; wSegEnd = sortedWeekTimes[0];
+      } else {
+        const diffWeeks = Math.round((sortedWeekTimes[i] - sortedWeekTimes[i-1]) / (7 * 86400000));
+        if (diffWeeks === 1) {
+          wCur++; wSegEnd = sortedWeekTimes[i];
+        } else {
+          weekStreaks.push({
+            start: new Date(wSegStart),
+            end: new Date(wSegEnd + 6 * 86400000),
+            length: wCur,
+          });
+          const voidStart = new Date(sortedWeekTimes[i-1] + 7 * 86400000);
+          const voidEnd = new Date(sortedWeekTimes[i] - 86400000);
+          weekGaps.push({
+            beforeEnd: new Date(sortedWeekTimes[i-1] + 6 * 86400000),
+            afterStart: new Date(sortedWeekTimes[i]),
+            voidStart,
+            voidEnd,
+            length: diffWeeks - 1,
+          });
+          wCur = 1; wSegStart = sortedWeekTimes[i]; wSegEnd = sortedWeekTimes[i];
+        }
+      }
+      if (wCur > longestWeekStreak) {
+        longestWeekStreak = wCur;
+        longestWeekStart = new Date(wSegStart);
+        longestWeekEnd = new Date(wSegEnd + 6 * 86400000);
+      }
+    }
+    weekStreaks.push({
+      start: new Date(wSegStart),
+      end: new Date(wSegEnd + 6 * 86400000),
+      length: wCur,
+    });
+  }
+
+  let longestWeekGap = null;
+  weekGaps.forEach(g => { if (!longestWeekGap || g.length > longestWeekGap.length) longestWeekGap = g; });
+
+  // Current week streak: streak terminando na semana de referência ou na anterior.
+  // A "semana de referência" é a anterior à atual quando o toggle está OFF, ou a atual quando ON.
+  const refWeekStart = includeCurrentWeek
+    ? weekStartOf(new Date())
+    : new Date(thisWeekStartTime - 7 * 86400000);
+  const lastTrainedWeekTime = sortedWeekTimes.length ? sortedWeekTimes[sortedWeekTimes.length - 1] : null;
+  const weeksSinceLastTraining = lastTrainedWeekTime !== null
+    ? Math.round((refWeekStart.getTime() - lastTrainedWeekTime) / (7 * 86400000))
+    : null;
+  const weekStreakIsActive = weeksSinceLastTraining !== null && weeksSinceLastTraining <= 1;
+  const currentWeekStreak = (weekStreakIsActive && weekStreaks.length)
+    ? weekStreaks[weekStreaks.length - 1].length
+    : 0;
+
+  // Aliases for backwards compat with existing renderers
+  const longest = longestWeekStreak;
+  const longestStart = longestWeekStart;
+  const longestEnd = longestWeekEnd;
+  const longestGap = longestWeekGap;
+  const currentStreak = currentWeekStreak;
+  const streakIsActive = weekStreakIsActive;
+  const streaks = weekStreaks;
+  const gaps = weekGaps;
+
+  // Período total (mantém comportamento existente p/ métricas que usam todo o histórico)
+  const first = new Date(allDates[0] + 'T00:00:00');
+  // Se o switch estiver OFF, considera só até o domingo anterior (fim da última semana completa).
+  const last = includeCurrentWeek
+    ? new Date()
+    : new Date(thisWeekStartTime - 1); // 1 ms antes da semana atual = domingo 23:59:59.999
+  const totalCalendarDays = Math.max(1, Math.round((last - first) / 86400000) + 1);
+  // Dias úteis (seg-sex) no período
+  const totalWeekdays = (() => {
+    const fullWeeks = Math.floor(totalCalendarDays / 7);
+    let count = fullWeeks * 5;
+    const remainder = totalCalendarDays % 7;
+    const startDow = first.getDay(); // 0=dom..6=sab
+    for (let i = 0; i < remainder; i++) {
+      const dow = (startDow + i) % 7;
+      if (dow >= 1 && dow <= 5) count++;
+    }
+    return Math.max(1, count);
+  })();
+  // Dias únicos treinados que caem em dia útil
+  const uniqueWeekdays = [...new Set(list.map(t => t.dateStr))].filter(ds => {
+    const d = new Date(ds + 'T00:00:00');
+    const dow = d.getDay();
+    return dow >= 1 && dow <= 5;
+  }).length;
+  const totalDays = totalCalendarDays;
+  const trainedRatio = uniqueWeekdays / totalWeekdays;
+
+  // === Período configurável para média semanal/mensal ===
+  // Aplica WEEKLY_AVG_PERIOD: 3m, 6m, 12m ou tudo. Se o período começar antes do primeiro
+  // treino do histórico, recua para o primeiro treino real (evita inflar o denominador).
+  const periodStartTime = getPeriodStartTime();
+  const avgFirst = (periodStartTime !== null && periodStartTime > first.getTime())
+    ? new Date(periodStartTime)
+    : first;
+  const avgLast = last;
+  const avgPeriodDays = Math.max(1, Math.round((avgLast - avgFirst) / 86400000) + 1);
+  const totalWeeks = Math.max(1, (avgLast - avgFirst) / (7 * 86400000));
+  const totalMonths = Math.max(1, avgPeriodDays / 30.4375);
+  // Numerador também respeita o filtro de período
+  const avgPeriodList = list.filter(t =>
+    t.date.getTime() >= avgFirst.getTime() && t.date.getTime() <= avgLast.getTime()
+  );
+  const weeklyAvg = (avgPeriodList.length / totalWeeks).toFixed(1);
+  const monthlyAvg = (avgPeriodList.length / totalMonths).toFixed(1);
+
+  // Day of week (training count + unique day count by DOW)
+  const dowCounts = [0,0,0,0,0,0,0];
+  const dowCountsUnof = [0,0,0,0,0,0,0];
+  const dowDaySets = [new Set(),new Set(),new Set(),new Set(),new Set(),new Set(),new Set()];
+  list.forEach(t => {
+    dowCounts[t.date.getDay()]++;
+    dowDaySets[t.date.getDay()].add(t.dateStr);
+  });
+  // unofficial: pega de allList o que NÃO é oficial
+  allList.filter(t => !t.official).forEach(t => {
+    dowCountsUnof[t.date.getDay()]++;
+  });
+  const dowDayCounts = dowDaySets.map(s => s.size);
+
+  // Monthly - total + by official/unofficial
+  const byMonth = new Map();
+  const byMonthOfficial = new Map();
+  const byMonthUnofficial = new Map();
+  list.forEach(t => {
+    const k = `${t.date.getFullYear()}-${String(t.date.getMonth()+1).padStart(2,'0')}`;
+    byMonth.set(k, (byMonth.get(k) || 0) + 1);
+    if (t.official) byMonthOfficial.set(k, (byMonthOfficial.get(k) || 0) + 1);
+    else byMonthUnofficial.set(k, (byMonthUnofficial.get(k) || 0) + 1);
+  });
+
+  // Most/least active month (apenas considera meses com pelo menos 1 treino)
+  let mostActiveMonth = null, leastActiveMonth = null;
+  byMonth.forEach((count, key) => {
+    if (!mostActiveMonth || count > mostActiveMonth.count) mostActiveMonth = { key, count };
+    if (!leastActiveMonth || count < leastActiveMonth.count) leastActiveMonth = { key, count };
+  });
+
+  // Most active week (ISO week)
+  function isoWeekKey(d) {
+    const dd = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    const dayNum = (dd.getDay() + 6) % 7; // Mon=0
+    dd.setDate(dd.getDate() - dayNum + 3);
+    const firstThursday = dd.getTime();
+    const yearStart = new Date(dd.getFullYear(), 0, 1);
+    const weekNum = 1 + Math.round(((firstThursday - yearStart) / 86400000 - 3 + ((yearStart.getDay() + 6) % 7)) / 7);
+    return `${dd.getFullYear()}-W${String(weekNum).padStart(2,'0')}`;
+  }
+  const byWeek = new Map();
+  // Usa allList pra incluir não oficiais nas barras semanais
+  allList.forEach(t => {
+    const k = isoWeekKey(t.date);
+    if (!byWeek.has(k)) byWeek.set(k, { count: 0, official: 0, unofficial: 0, start: weekStartOf(t.date) });
+    const w = byWeek.get(k);
+    w.count++;
+    if (t.official) w.official++; else w.unofficial++;
+  });
+  let mostActiveWeek = null;
+  byWeek.forEach((v, k) => {
+    if (!mostActiveWeek || v.count > mostActiveWeek.count) mostActiveWeek = { key: k, count: v.count, start: v.start };
+  });
+
+  // Multi-training distribution
+  const trainingsPerDay = new Map();
+  list.forEach(t => trainingsPerDay.set(t.dateStr, (trainingsPerDay.get(t.dateStr) || 0) + 1));
+  const dayDistribution = new Map(); // count -> num days
+  let recordDayCount = 0, recordDayDate = null;
+  trainingsPerDay.forEach((cnt, ds) => {
+    dayDistribution.set(cnt, (dayDistribution.get(cnt) || 0) + 1);
+    if (cnt > recordDayCount) { recordDayCount = cnt; recordDayDate = ds; }
+  });
+
+  // Official vs unofficial
+  const officialCount = list.filter(t => t.official).length;
+  const unofficialCount = list.length - officialCount;
+  // Days that mixed official + unofficial
+  const dayOfficialFlag = new Map(); // dateStr -> {hasOfficial, hasUnofficial}
+  list.forEach(t => {
+    if (!dayOfficialFlag.has(t.dateStr)) dayOfficialFlag.set(t.dateStr, { o: false, u: false });
+    const v = dayOfficialFlag.get(t.dateStr);
+    if (t.official) v.o = true; else v.u = true;
+  });
+  let mixedDays = 0;
+  dayOfficialFlag.forEach(v => { if (v.o && v.u) mixedDays++; });
+
+  // Cumulative series (date -> cumulative training count)
+  const cumulative = []; // {date, total}
+  let cumCount = 0;
+  // Use list (sorted by date) and group by date for cumulative
+  const sortedByDate = list.slice().sort((a, b) => a.date - b.date);
+  sortedByDate.forEach(t => {
+    cumCount++;
+    cumulative.push({ dateStr: t.dateStr, date: t.date, total: cumCount });
+  });
+  // Cumulative com TODOS (oficial + não oficial) — para overlay no gráfico
+  const cumulativeAll = []; // {date, total}
+  let cumAllCount = 0;
+  const sortedAll = allList.slice().sort((a, b) => a.date - b.date);
+  sortedAll.forEach(t => {
+    cumAllCount++;
+    cumulativeAll.push({ dateStr: t.dateStr, date: t.date, total: cumAllCount });
+  });
+
+  // ===== Próximo marco de 50 treinos =====
+  const NEXT_MILESTONE_STEP = 50;
+  const nextMilestoneTotal = (Math.floor(list.length / NEXT_MILESTONE_STEP) + 1) * NEXT_MILESTONE_STEP;
+  const nextMilestoneRemaining = nextMilestoneTotal - list.length;
+  let nextMilestoneEta = null;
+  if (perWeekFloat() > 0) {
+    const weeksToGo = nextMilestoneRemaining / perWeekFloat();
+    const days = Math.round(weeksToGo * 7);
+    nextMilestoneEta = new Date(); nextMilestoneEta.setDate(nextMilestoneEta.getDate() + days);
+  }
+  function perWeekFloat() { return parseFloat(weeklyAvg) || 0; }
+
+  // ===== Atividade por semana: do começo dos tempos até a semana de referência =====
+  // Quando o switch está OFF, a "última semana" exibida é a semana passada (a atual é parcial).
+  // O usuário rola horizontalmente até onde quiser.
+  const firstWeekStart = weekStartOf(new Date(allDates[0] + 'T00:00:00'));
+  const lastWeekStart = includeCurrentWeek
+    ? weekStartOf(new Date())
+    : new Date(thisWeekStartTime - 7 * 86400000);
+  const totalWeeksSpan = Math.max(1, Math.round((lastWeekStart.getTime() - firstWeekStart.getTime()) / (7 * 86400000)) + 1);
+
+  // Pré-agrega contagens por weekStart (em ms) — bem mais rápido que filtrar a allList por semana
+  const weekBucket = new Map();
+  allList.forEach(t => {
+    const k = weekStartOf(t.date).getTime();
+    if (!weekBucket.has(k)) weekBucket.set(k, { official: 0, unofficial: 0 });
+    const b = weekBucket.get(k);
+    if (t.official) b.official++; else b.unofficial++;
+  });
+
+  const recentWeeks = [];
+  for (let i = 0; i < totalWeeksSpan; i++) {
+    const start = new Date(firstWeekStart.getTime() + i * 7 * 86400000);
+    const end = new Date(start.getTime() + 6 * 86400000);
+    const b = weekBucket.get(start.getTime()) || { official: 0, unofficial: 0 };
+    const isCurrent = i === totalWeeksSpan - 1;
+    recentWeeks.push({
+      start, end,
+      count: b.official + b.unofficial,
+      official: b.official,
+      unofficial: b.unofficial,
+      isCurrent,
+    });
+  }
+
+  // Tendência: usa só as últimas 12 semanas pra ficar estável
+  const tail = recentWeeks.slice(-12);
+  const xs = tail.map((_, i) => i);
+  const ys = tail.map(w => w.count);
+  const meanX = xs.length ? xs.reduce((s, v) => s + v, 0) / xs.length : 0;
+  const meanY = ys.length ? ys.reduce((s, v) => s + v, 0) / ys.length : 0;
+  let num = 0, den = 0;
+  xs.forEach((x, i) => { num += (x - meanX) * (ys[i] - meanY); den += (x - meanX) ** 2; });
+  const slope = den === 0 ? 0 : num / den;
+  const totalChange = slope * Math.max(0, tail.length - 1);
+  let trendDir = 'flat', trendLabel = 'estável';
+  const threshold = Math.max(1, meanY * 0.25);
+  if (totalChange > threshold) { trendDir = 'up'; trendLabel = 'subindo'; }
+  else if (totalChange < -threshold) { trendDir = 'down'; trendLabel = 'caindo'; }
+  // Média móvel das últimas 4 semanas
+  const last4 = recentWeeks.slice(-4);
+  const last4Avg = last4.length ? last4.reduce((s, w) => s + w.count, 0) / last4.length : 0;
+  const tailYs = tail.map(w => w.count);
+  const peak12 = tailYs.length ? Math.max(...tailYs) : 0;
+  const peak12Week = tailYs.length ? tail[tailYs.lastIndexOf(peak12)] : null;
+  const recentActivity = {
+    weeks: recentWeeks,
+    slope,
+    trendDir,
+    trendLabel,
+    last4Avg,
+    peak12,
+    peak12Week,
+    currentCount: recentWeeks.length ? recentWeeks[recentWeeks.length - 1].count : 0,
+  };
+
+  const result = {
+    total: list.length,
+    uniqueDays,
+    totalDays,
+    totalWeekdays,
+    uniqueWeekdays,
+    trainedRatio,
+    // Streaks por SEMANA
+    longest, longestStart, longestEnd,
+    longestGap,
+    currentStreak,
+    streakIsActive,
+    daysSinceLast,
+    weeksSinceLastTraining,
+    streaks, gaps,
+    // Frequência
+    weeklyAvg,
+    monthlyAvg,
+    dowCounts,
+    dowCountsUnof,
+    dowDayCounts,
+    byMonth,
+    byMonthOfficial,
+    byMonthUnofficial,
+    byWeek,
+    mostActiveMonth, leastActiveMonth,
+    mostActiveWeek,
+    dayDistribution,
+    recordDayCount, recordDayDate,
+    officialCount, unofficialCount,
+    mixedDays,
+    cumulative,
+    cumulativeAll,
+    // Marco e atividade recente
+    nextMilestoneTotal, nextMilestoneRemaining, nextMilestoneEta,
+    recentActivity,
+    first: list[0],
+    last: list[list.length - 1],
+  };
+  _statsCache.set(cacheKey, result);
+  return result;
+}
+
+function fmtDate(d) {
+  if (typeof d === 'string') d = new Date(d + 'T00:00:00');
+  return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' });
+}
+function fmtDateShort(d) {
+  if (typeof d === 'string') d = new Date(d + 'T00:00:00');
+  return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+}
+function daysAgo(d) {
+  if (typeof d === 'string') d = new Date(d + 'T00:00:00');
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  return Math.floor((today - d) / 86400000);
+}
+function fmtSpan(days) {
+  if (days >= 365) {
+    const y = Math.floor(days / 365);
+    const m = Math.floor((days % 365) / 30.4375);
+    return `${y}a${m ? ' ' + m + 'm' : ''}`;
+  } else if (days >= 60) {
+    return `${Math.floor(days / 30.4375)}m`;
+  }
+  return `${days}d`;
+}
+
+// ========== Render ==========
+function render() {
+  invalidateStatsCache();
+  // Filtra semana atual de TODOS os dados quando o toggle estiver desligado
+  const cwStart = currentWeekStartTime();
+  effectiveTrainings = includeCurrentWeek
+    ? trainings
+    : trainings.filter(t => weekStartOf(t.date).getTime() < cwStart);
+
+  const list = effectiveTrainings.filter(t => t.official);
+  if (!list.length) {
+    renderEmpty();
+    return;
+  }
+  const stats = computeStats(list, effectiveTrainings);
+  renderHeader(stats);
+  renderStats(stats, list);
+  renderGraduation(stats, list);
+
+  // Treinos section — respects treinosFilterMode
+  // 'all' = todos os treinos, 'official' = só oficiais, 'unofficial' = só não oficiais
+  const treinosFiltered = treinosFilterMode === 'official' ? effectiveTrainings.filter(t => t.official)
+                        : treinosFilterMode === 'unofficial' ? effectiveTrainings.filter(t => !t.official)
+                        : effectiveTrainings;
+  const treinosStats = computeStats(treinosFiltered, treinosFiltered);
+  renderCumulativeChart(treinosStats || stats);
+  renderRecentActivity(treinosStats || stats);
+  renderVolumeMetrics(treinosStats || stats);
+  renderHeatmap(treinosFiltered, treinosStats || stats);
+
+  renderConsistency(stats);
+  renderTimelineSG(stats);
+  renderMultiDays(stats);
+  renderDowHeatmap(stats);
+  renderDow(stats);
+  renderMilestones(stats);
+}
+
+function renderEmpty() {
+  $('totalTrainings').textContent = '0';
+  $('graduationContainer').innerHTML = '<div class="empty-state">Nenhum treino encontrado nas pastas das faixas.</div>';
+  $('heatmap').innerHTML = '';
+  $('dowGrid').innerHTML = '';
+  $('dateRange').textContent = 'Sem treinos ainda';
+}
+
+function renderHeader(stats) {
+  $('dateRange').textContent = `${fmtDate(stats.first.date)} → ${fmtDate(stats.last.date)}`;
+}
+
+function renderStats(stats, list) {
+  // Current belt — agora numa pill no header
+  const lastBelt = list[list.length - 1].belt;
+  const beltTrainings = effectiveTrainings.filter(t => t.belt.id === lastBelt.id && t.official);
+  const beltStart = beltTrainings[0];
+  const daysAtBelt = beltStart ? daysAgo(beltStart.date) : 0;
+  $('beltPill').style.display = 'inline-flex';
+  $('beltPillSwatch').className = 'bp-swatch ' + lastBelt.class;
+  // garantir que o tag span tenha o display certo (foi mudado de div pra span)
+  $('beltPillName').textContent = lastBelt.name;
+  // Formato de tempo amigável: anos+meses se >= 1 ano, meses+dias se >= 60d, senão dias
+  let timeStr;
+  if (daysAtBelt >= 365) {
+    const years = Math.floor(daysAtBelt / 365);
+    const months = Math.floor((daysAtBelt % 365) / 30.4375);
+    timeStr = `${years}a${months ? ' ' + months + 'm' : ''} na faixa`;
+  } else if (daysAtBelt >= 60) {
+    const months = Math.floor(daysAtBelt / 30.4375);
+    const days = daysAtBelt - Math.round(months * 30.4375);
+    timeStr = `${months}m${days > 0 ? ' ' + days + 'd' : ''} na faixa`;
+  } else {
+    timeStr = `há ${daysAtBelt} ${daysAtBelt === 1 ? 'dia' : 'dias'} na faixa`;
+  }
+  $('beltPillTime').textContent = timeStr;
+
+  // Total
+  animateNumber('totalTrainings', stats.total);
+  const unof = effectiveTrainings.filter(t => !t.official).length;
+  $('totalUnofficialInline').textContent = unof ? `+${unof}` : '';
+  $('totalUnofficial').innerHTML = unof
+    ? `<span class="unof-extra">+${unof} não oficial${unof === 1 ? '' : 's'}</span>`
+    : '';
+
+  // Próximo marco (múltiplo de 50)
+  $('nextMilestoneRemaining').innerHTML = `${stats.nextMilestoneRemaining}<span class="unit">treino${stats.nextMilestoneRemaining === 1 ? '' : 's'}</span>`;
+  let etaTxt = `para o treino #${stats.nextMilestoneTotal}`;
+  if (stats.nextMilestoneEta) {
+    const etaStr = stats.nextMilestoneEta.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' });
+    etaTxt += ` · ETA ${etaStr}`;
+  }
+  $('nextMilestoneExtra').textContent = etaTxt;
+
+  // Streak — agora em SEMANAS
+  $('longestStreak').innerHTML = `${stats.longest}<span class="unit">sem</span>`;
+  if (stats.longest > 1 && stats.longestStart) {
+    $('longestStreakDates').textContent = `${fmtDateShort(stats.longestStart.toISOString().slice(0,10))} → ${fmtDateShort(stats.longestEnd.toISOString().slice(0,10))}`;
+  } else if (stats.longest === 1 && stats.longestStart) {
+    $('longestStreakDates').textContent = `semana de ${fmtDateShort(stats.longestStart.toISOString().slice(0,10))}`;
+  } else {
+    $('longestStreakDates').textContent = '';
+  }
+
+  // Current streak — em SEMANAS
+  $('currentStreak').innerHTML = `${stats.currentStreak}<span class="unit">sem</span>`;
+  if (stats.currentStreak === 0) {
+    $('currentStreakExtra').textContent = stats.weeksSinceLastTraining
+      ? `${stats.weeksSinceLastTraining} sem sem ${STREAK_MIN_TRAININGS}+ treinos`
+      : '—';
+  } else {
+    const refLabel = includeCurrentWeek ? 'esta semana' : 'semana passada';
+    const earlierLabel = includeCurrentWeek ? 'semana passada' : 'há 2 semanas';
+    $('currentStreakExtra').textContent = stats.weeksSinceLastTraining === 0
+      ? `ativo (${refLabel})`
+      : `ativo (${earlierLabel})`;
+  }
+
+  // Weekly avg
+  $('weeklyAvg').textContent = stats.weeklyAvg;
+  const wae = $('weeklyAvgExtra');
+  if (wae) wae.textContent = `treinos/sem · ${getPeriodLabel()}`;
+
+  // Last training
+  const last = list[list.length - 1];
+  $('lastTraining').textContent = fmtDateShort(last.date);
+  const ago = daysAgo(last.date);
+  $('lastTrainingAgo').textContent = ago === 0 ? 'hoje' : ago === 1 ? 'ontem' : `há ${ago} dias`;
+}
+
+// HTML do bloco "trajetória nas faixas" (counts oficiais por faixa, mostrado dentro do card de graduação)
+function renderBeltCountsHtml(currentBeltId) {
+  // Ritmo semanal atual (oficial) — usado para estimar faixas futuras.
+  // Respeita o WEEKLY_AVG_PERIOD configurado.
+  const allOfficialFull = effectiveTrainings.filter(t => t.official);
+  const periodStartTime = getPeriodStartTime();
+  const allOfficial = periodStartTime !== null
+    ? allOfficialFull.filter(t => t.date.getTime() >= periodStartTime)
+    : allOfficialFull;
+  let currentWeeklyRate = 0;
+  if (allOfficial.length >= 2) {
+    const firstDate = allOfficial[0].date, lastDate = allOfficial[allOfficial.length - 1].date;
+    const totalDays = Math.max(1, Math.round((lastDate - firstDate) / 86400000) + 1);
+    currentWeeklyRate = allOfficial.length / (totalDays / 7);
+  }
+  const currentBeltIdx = BELTS.findIndex(b => b.id === currentBeltId);
+  // veryFirstDate continua olhando todo o histórico (afeta "Jiu-jitsu total")
+  const veryFirstDate = allOfficialFull.length ? allOfficialFull[0].date : null;
+
+  function fmtDateEta(d) {
+    return d.toLocaleDateString('pt-BR', { month: 'short', year: 'numeric' });
+  }
+
+  // Pré-computa datas de início/fim e duração em cada faixa
+  const beltData = BELTS.map(belt => {
+    const bt = effectiveTrainings.filter(t => t.belt.id === belt.id && t.official);
+    return {
+      belt,
+      trainings: bt,
+      n: bt.length,
+      first: bt.length ? bt[0].date : null,
+      last: bt.length ? bt[bt.length - 1].date : null,
+    };
+  });
+
+  // Calcula semanas futuras acumuladas para projeção.
+  // Treinos excedentes na faixa atual reduzem o tempo restante nela.
+  let futureWeeksAccum = 0;
+
+  // Descobre treinos excedentes na faixa atual (já "pagos" para a próxima)
+  const currentBeltData = beltData[currentBeltIdx];
+  const currentRule = BELT_RULES[BELTS[currentBeltIdx]?.class] || { aulasPerGrau: 0 };
+  const currentNeeded = 5 * currentRule.aulasPerGrau;
+  const currentExcess = currentBeltData ? Math.max(0, currentBeltData.n - currentNeeded) : 0;
+
+  const cards = beltData.map((bd, beltIdx) => {
+    const { belt, n, first, last } = bd;
+    const isCurrent = belt.id === currentBeltId;
+    let infoBlocks = []; // {label, value}
+
+    if (isCurrent) {
+      // === Faixa atual ===
+      const days = Math.max(1, daysAgo(first));
+      infoBlocks.push({ label: 'Na faixa', value: fmtSpan(days) });
+      infoBlocks.push({ label: 'Chegada', value: fmtDateEta(first) });
+      if (veryFirstDate) {
+        const totalDays = Math.max(1, daysAgo(veryFirstDate));
+        infoBlocks.push({ label: 'Jiu-jitsu total', value: fmtSpan(totalDays) });
+      }
+      // Semanas restantes: descontando excedentes
+      const remaining = Math.max(0, currentNeeded - n);
+      if (currentWeeklyRate > 0 && remaining > 0) {
+        futureWeeksAccum = remaining / currentWeeklyRate;
+      } else {
+        futureWeeksAccum = 0; // já cumpriu, excedentes transferidos
+      }
+    } else if (n > 0 && beltIdx <= currentBeltIdx) {
+      // === Faixa passada (completada) ===
+      const span = Math.max(1, Math.round((last - first) / 86400000) + 1);
+      infoBlocks.push({ label: 'Na faixa', value: fmtSpan(span) });
+      infoBlocks.push({ label: 'Chegada', value: fmtDateEta(first) });
+      if (veryFirstDate && beltIdx > 0) {
+        const totalToArrival = Math.max(1, Math.round((first - veryFirstDate) / 86400000) + 1);
+        infoBlocks.push({ label: 'Jiu-jitsu total', value: fmtSpan(totalToArrival) });
+      }
+    } else if (n === 0 && beltIdx > currentBeltIdx) {
+      // === Faixa futura ===
+      if (belt.class === 'preta') {
+        const prevBeltClass = BELTS[beltIdx - 1]?.class;
+        const prevAulas = 5 * (BELT_RULES[prevBeltClass]?.aulasPerGrau || 0);
+        const prevEffective = Math.max(0, prevAulas - currentExcess);
+        if (currentWeeklyRate > 0 && prevEffective > 0) {
+          futureWeeksAccum += prevEffective / currentWeeklyRate;
+        }
+        // Ordem: na faixa, chegada estimada, jiu-jitsu total
+        infoBlocks.push({ label: 'Na faixa', value: 'o caminho de uma vida' });
+        if (veryFirstDate && currentWeeklyRate > 0) {
+          const etaDate = new Date();
+          etaDate.setDate(etaDate.getDate() + Math.round(futureWeeksAccum * 7));
+          infoBlocks.push({ label: 'Chegada estimada', value: fmtDateEta(etaDate) });
+          const totalDaysToReach = daysAgo(veryFirstDate) + Math.round(futureWeeksAccum * 7);
+          infoBlocks.push({ label: 'Jiu-jitsu total (est.)', value: `~${fmtSpan(totalDaysToReach)}` });
+        }
+      } else if (currentWeeklyRate > 0) {
+        const prevBelt = BELTS[beltIdx - 1];
+        const isPrevCurrent = prevBelt && prevBelt.id === currentBeltId;
+        if (!isPrevCurrent) {
+          const prevAulas = 5 * (BELT_RULES[prevBelt?.class]?.aulasPerGrau || 0);
+          const discount = (beltIdx === currentBeltIdx + 2) ? currentExcess : 0;
+          const prevEffective = Math.max(0, prevAulas - discount);
+          if (prevEffective > 0) {
+            futureWeeksAccum += prevEffective / currentWeeklyRate;
+          }
+        }
+        // Ordem: na faixa (est.), chegada estimada, jiu-jitsu total (est.)
+        const aulasInBelt = 5 * (BELT_RULES[belt.class]?.aulasPerGrau || 0);
+        if (aulasInBelt > 0) {
+          const weeksInBelt = aulasInBelt / currentWeeklyRate;
+          infoBlocks.push({ label: 'Na faixa (est.)', value: `~${fmtSpan(Math.round(weeksInBelt * 7))}` });
+        }
+        const etaDate = new Date();
+        etaDate.setDate(etaDate.getDate() + Math.round(futureWeeksAccum * 7));
+        infoBlocks.push({ label: 'Chegada estimada', value: fmtDateEta(etaDate) });
+        if (veryFirstDate) {
+          const totalDaysToReach = daysAgo(veryFirstDate) + Math.round(futureWeeksAccum * 7);
+          infoBlocks.push({ label: 'Jiu-jitsu total (est.)', value: `~${fmtSpan(totalDaysToReach)}` });
+        }
+      } else {
+        infoBlocks.push({ label: '', value: '—' });
+      }
+    } else {
+      infoBlocks.push({ label: '', value: '—' });
+    }
+
+    const cls = `gbc${n === 0 ? ' empty' : ''}${isCurrent ? ' current' : ''}`;
+    const infoHtml = infoBlocks.map((b, i) => {
+      const dim = '';
+      const labelHtml = b.label ? `<div class="gbc-info-label">${b.label}</div>` : '';
+      return `${labelHtml}<div class="gbc-extra${dim}">${b.value}</div>`;
+    }).join('');
+    return `
+      <div class="${cls}">
+        <div class="gbc-row">
+          <span class="gbc-swatch ${belt.class}"></span>
+          <span class="gbc-name">${belt.name}</span>
+        </div>
+        <div class="gbc-count">${n}</div>
+        ${infoHtml}
+      </div>
+    `;
+  }).join('');
+  return `<div class="grad-belts">${cards}</div>`;
+}
+
+function renderGraduation(stats, list) {
+  const container = $('graduationContainer');
+  if (!container) return;
+  const summary = $('graduationSummary');
+  const gradTitle = $('graduationTitle');
+  if (!list.length) { container.innerHTML = ''; if (gradTitle) gradTitle.textContent = 'Evolução'; return; }
+
+  // Faixa atual = a do treino mais recente
+  const currentBelt = list[list.length - 1].belt;
+  if (gradTitle) gradTitle.textContent = 'Evolução';
+  const beltClass = currentBelt.class;
+  const rule = BELT_RULES[beltClass] || { aulasPerGrau: 0 };
+  const aulasPerGrau = rule.aulasPerGrau;
+
+  // Aulas oficiais na faixa atual
+  const beltTrainings = effectiveTrainings.filter(t => t.belt.id === currentBelt.id && t.official);
+  const aulasNaFaixa = beltTrainings.length;
+  const beltStartDate = beltTrainings[0] ? beltTrainings[0].date : null;
+
+  const daysAtBeltGrad = beltStartDate ? daysAgo(beltStartDate) : 0;
+  const allOfficialGrad = effectiveTrainings.filter(t => t.official);
+  const veryFirstDateGrad = allOfficialGrad.length ? allOfficialGrad[0].date : null;
+  const totalJJDays = veryFirstDateGrad ? daysAgo(veryFirstDateGrad) : 0;
+
+  const timeInfoHtml = `<span class="gs-sep">·</span>
+        <span class="gs-label">na faixa</span> <strong>${fmtSpan(daysAtBeltGrad)}</strong>
+        <span class="gs-sep">·</span>
+        <span class="gs-label">jiu-jitsu total</span> <strong>${fmtSpan(totalJJDays)}</strong>`;
+
+  // Caso especial: faixa preta — não temos regra de graus por aulas
+  if (!aulasPerGrau) {
+    container.innerHTML = `
+      <div class="grad-header">
+        <div class="grad-belt">
+          <span class="gb-swatch ${beltClass}"></span>
+          <span>${currentBelt.name}</span>
+        </div>
+        <div class="grad-status">${aulasNaFaixa} aula${aulasNaFaixa===1?'':'s'} na faixa ${timeInfoHtml}</div>
+      </div>
+      <div style="font-size:0.78rem;color:var(--text-dim)">
+        Graduação na preta segue lógica diferente (tempo de faixa, não aulas). Aproveita 🥋
+      </div>
+      ${renderBeltCountsHtml(currentBelt.id)}
+    `;
+    if (summary) summary.textContent = currentBelt.name;
+    return;
+  }
+
+  // Grau atual: 0..4 (4 = todos os graus, próximo é a faixa)
+  const currentGrau = GRAU_OVERRIDE !== 'auto'
+    ? Math.min(4, parseInt(GRAU_OVERRIDE) || 0)
+    : Math.min(4, Math.floor(aulasNaFaixa / aulasPerGrau));
+  const isPromotion = currentGrau >= 4;
+  const nextThreshold = isPromotion ? 5 * aulasPerGrau : (currentGrau + 1) * aulasPerGrau;
+  const aulasParaProximo = Math.max(0, nextThreshold - aulasNaFaixa);
+  const previousThreshold = isPromotion ? 4 * aulasPerGrau : currentGrau * aulasPerGrau;
+  // Progresso dentro do segmento atual (entre o último marco e o próximo)
+  const segSpan = nextThreshold - previousThreshold;
+  const segDone = aulasNaFaixa - previousThreshold;
+  const segPct = Math.max(0, Math.min(100, (segDone / segSpan) * 100));
+
+  // Próxima faixa
+  const idx = BELTS.findIndex(b => b.id === currentBelt.id);
+  const nextBelt = idx >= 0 && idx < BELTS.length - 1 ? BELTS[idx + 1] : null;
+
+  // ETA — usa média semanal (oficial)
+  const weeklyAvg = parseFloat(stats.weeklyAvg) || 0;
+  let etaWeeks = null, etaDate = null;
+  if (weeklyAvg > 0 && aulasParaProximo > 0) {
+    etaWeeks = Math.ceil(aulasParaProximo / weeklyAvg);
+    etaDate = new Date(); etaDate.setHours(0,0,0,0);
+    etaDate.setDate(etaDate.getDate() + etaWeeks * 7);
+  }
+
+  // Ritmo médio na faixa atual (aulas por semana, baseado em quanto tempo na faixa)
+  let beltWeeks = 0, beltAulasPerWeek = 0;
+  if (beltStartDate) {
+    const today = new Date(); today.setHours(0,0,0,0);
+    const days = Math.max(1, Math.round((today - beltStartDate) / 86400000) + 1);
+    beltWeeks = days / 7;
+    beltAulasPerWeek = aulasNaFaixa / beltWeeks;
+  }
+
+  // ETA com ritmo da faixa atual (mais realista pra faixas longas)
+  let etaBeltWeeks = null, etaBeltDate = null;
+  if (beltAulasPerWeek > 0 && aulasParaProximo > 0) {
+    etaBeltWeeks = Math.ceil(aulasParaProximo / beltAulasPerWeek);
+    etaBeltDate = new Date(); etaBeltDate.setHours(0,0,0,0);
+    etaBeltDate.setDate(etaBeltDate.getDate() + etaBeltWeeks * 7);
+  }
+
+  function fmtEta(d) {
+    if (!d) return '—';
+    return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' });
+  }
+  function fmtDur(weeks) {
+    if (!weeks) return '—';
+    if (weeks < 8) return `~${weeks} sem`;
+    const months = weeks / 4.345;
+    if (months < 12) return `~${months.toFixed(1)} meses`;
+    const years = months / 12;
+    return `~${years.toFixed(1)} anos`;
+  }
+
+  const tipo = isPromotion ? `subir pra ${nextBelt ? nextBelt.name : 'próxima faixa'}` : `${currentGrau + 1}º grau`;
+  const targetLabel = isPromotion ? (nextBelt ? `Faixa ${nextBelt.name}` : 'Próxima faixa') : `${currentGrau + 1}º grau`;
+
+  // Bar labels: 4 graus + faixa
+  const labelsHtml = [0,1,2,3,4].map(g => {
+    let label;
+    if (g === 4) label = nextBelt ? nextBelt.name : 'faixa';
+    else label = `${g+1}º`;
+    const isCurrentSeg = g === currentGrau;
+    const isNextPromo = g === 4 && isPromotion;
+    const cls = isCurrentSeg ? 'current' : (isNextPromo ? 'next-promo' : '');
+    return `<div class="gbl ${cls}">${label}</div>`;
+  }).join('');
+
+  // Pips dos graus já obtidos (0..4)
+  const pipsHtml = [0,1,2,3].map(g => {
+    return `<span class="gb-grau-pip${g < currentGrau ? ' on' : ''}"></span>`;
+  }).join('');
+
+  const totalProgress = aulasNaFaixa / (5 * aulasPerGrau);
+  const totalPct = Math.min(100, totalProgress * 100);
+
+  container.innerHTML = `
+    <div class="grad-header">
+      <div class="grad-belt">
+        <span class="gb-swatch ${beltClass}"></span>
+        <span>${currentBelt.name}</span>
+        <span class="gb-graus">${pipsHtml}</span>
+        <span style="font-size:0.78rem;color:var(--text-dim);font-weight:500">
+          ${currentGrau === 0 ? 'sem graus ainda' : `${currentGrau} grau${currentGrau===1?'':'s'}`}
+        </span>
+      </div>
+      <div class="grad-status">
+        <span class="gs-label">aulas na faixa</span> <strong>${aulasNaFaixa}</strong>
+        / <strong>${5 * aulasPerGrau}</strong>
+        ${timeInfoHtml}
+      </div>
+    </div>
+
+    <div class="grad-bar-wrap">
+      <div class="grad-bar">
+        <div class="grad-bar-fill" style="width:${totalPct}%"></div>
+        <div class="grad-bar-ticks">
+          <div class="grad-bar-tick"></div>
+          <div class="grad-bar-tick"></div>
+          <div class="grad-bar-tick"></div>
+          <div class="grad-bar-tick"></div>
+          <div class="grad-bar-tick"></div>
+        </div>
+      </div>
+      <div class="grad-bar-labels">${labelsHtml}</div>
+    </div>
+
+    <div class="grad-foot">
+      <div class="gf-item">
+        <span class="gf-label">Próxima graduação</span>
+        <span class="gf-value accent">${targetLabel}</span>
+        <span class="gf-extra">${aulasParaProximo === 0 ? '✓ pronto, esperando promoção' : `faltam ${aulasParaProximo} aula${aulasParaProximo===1?'':'s'}`}</span>
+      </div>
+      <div class="gf-item">
+        <span class="gf-label">ETA · média (${getPeriodShort()})</span>
+        <span class="gf-value">${aulasParaProximo === 0 ? 'Ultrapassado' : fmtEta(etaDate)}</span>
+        <span class="gf-extra">${aulasParaProximo === 0 ? `superou em ${aulasNaFaixa - nextThreshold} aulas` : `${fmtDur(etaWeeks)} a ${weeklyAvg.toFixed(1)} aulas/sem`}</span>
+      </div>
+      <div class="gf-item">
+        <span class="gf-label">ETA · ritmo na faixa</span>
+        <span class="gf-value">${aulasParaProximo === 0 ? 'Ultrapassado' : fmtEta(etaBeltDate)}</span>
+        <span class="gf-extra">${aulasParaProximo === 0 ? `${beltAulasPerWeek.toFixed(1)} aulas/sem` : `${fmtDur(etaBeltWeeks)} a ${beltAulasPerWeek.toFixed(1)} aulas/sem`}</span>
+      </div>
+      <div class="gf-item">
+        <span class="gf-label">Progresso ${tipo}</span>
+        <span class="gf-value">${Math.min(segDone, segSpan)}/${segSpan}</span>
+        <span class="gf-extra">${Math.min(100, segPct).toFixed(0)}% do segmento</span>
+      </div>
+    </div>
+
+    ${renderBeltCountsHtml(currentBelt.id)}
+  `;
+
+  if (summary) {
+    if (aulasParaProximo === 0) {
+      summary.textContent = isPromotion
+        ? `pronto pra subir pra ${nextBelt ? nextBelt.name : 'próxima faixa'}`
+        : `pronto pro ${currentGrau + 1}º grau`;
+    } else {
+      summary.textContent = isPromotion
+        ? `faltam ${aulasParaProximo} aulas para ${nextBelt ? nextBelt.name : 'próxima faixa'}`
+        : `faltam ${aulasParaProximo} aulas para o ${currentGrau + 1}º grau`;
+    }
+  }
+}
+
+function animateNumber(id, target) {
+  const el = $(id);
+  const cur = parseInt(el.textContent) || 0;
+  if (cur === target) return;
+  const dur = 600;
+  const start = performance.now();
+  function tick(now) {
+    const t = Math.min(1, (now - start) / dur);
+    const e = 1 - Math.pow(1 - t, 3);
+    el.textContent = Math.round(cur + (target - cur) * e);
+    if (t < 1) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+
+function renderRecentActivity(stats) {
+  const r = stats.recentActivity;
+  const svg = $('activitySvg');
+  const scroll = $('activityScroll');
+  svg.innerHTML = '';
+  if (!r.weeks.length) return;
+
+  // Largura por semana — escolhe um valor confortável (cada barra = ~22px de slot, 70% barra).
+  // Mantém um mínimo de largura pra ocupar o container quando há poucas semanas.
+  const PX_PER_WEEK = 22;
+  const containerW = Math.max(400, scroll.clientWidth || 600);
+  const W = Math.max(containerW, r.weeks.length * PX_PER_WEEK);
+  const H = 200;
+  const pad = { top: 14, right: 12, bottom: 28, left: 12 };
+  const usableW = W - pad.left - pad.right;
+  const usableH = H - pad.top - pad.bottom;
+  const maxC = Math.max(...r.weeks.map(w => w.count), 1);
+  const baselineAvg = parseFloat(stats.weeklyAvg) || 0;
+  const barSlot = usableW / r.weeks.length;
+  const barW = Math.max(2, barSlot * 0.7);
+
+  svg.setAttribute('width', W);
+  svg.setAttribute('height', H);
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+
+  // Linha de baseline (média geral)
+  if (baselineAvg > 0 && baselineAvg <= maxC) {
+    const yBase = pad.top + (1 - baselineAvg / maxC) * usableH;
+    svg.insertAdjacentHTML('beforeend',
+      `<line class="activity-baseline" x1="${pad.left}" x2="${W - pad.right}" y1="${yBase}" y2="${yBase}" />
+       <text class="activity-axis" x="${W - pad.right - 2}" y="${yBase - 3}" text-anchor="end">média ${baselineAvg.toFixed(1)}/sem</text>`);
+  }
+
+  // Marcadores de mês ao longo do eixo X — só onde o mês muda
+  let prevMonth = -1;
+  r.weeks.forEach((w, i) => {
+    const m = w.start.getMonth();
+    if (m !== prevMonth) {
+      const x = pad.left + i * barSlot + barSlot / 2;
+      const lbl = MONTH_NAMES[m].slice(0, 3) + (m === 0 || prevMonth === -1 ? `/${String(w.start.getFullYear()).slice(2)}` : '');
+      svg.insertAdjacentHTML('beforeend',
+        `<text class="activity-axis" x="${x}" y="${H - 8}" text-anchor="middle">${lbl}</text>`);
+      prevMonth = m;
+    }
+  });
+
+  // Barras (oficial embaixo, não oficial em cima)
+  r.weeks.forEach((w, i) => {
+    const totalH = (w.count / maxC) * usableH;
+    const ofH = (w.official / maxC) * usableH;
+    const unofH = (w.unofficial / maxC) * usableH;
+    const x = pad.left + i * barSlot + (barSlot - barW) / 2;
+    const yTop = pad.top + usableH - totalH;
+    const yOf = pad.top + usableH - ofH;
+    const tipParts = [`${w.official} oficial`];
+    if (w.unofficial) tipParts.push(`+${w.unofficial} não oficial${w.unofficial === 1 ? '' : 's'}`);
+    const curTag = w.isCurrent ? (includeCurrentWeek ? ' (atual, parcial)' : ' (última)') : '';
+    const tip = `${fmtDateShort(w.start.toISOString().slice(0,10))} → ${fmtDateShort(w.end.toISOString().slice(0,10))} · ${tipParts.join(' ')}${curTag}`;
+    if (unofH > 0) {
+      svg.insertAdjacentHTML('beforeend',
+        `<rect class="activity-bar-unof${w.isCurrent ? ' current' : ''}" x="${x}" y="${Math.min(yTop, pad.top + usableH - 1)}" width="${barW}" height="${Math.max(1, unofH)}" rx="2" data-tip="${tip}" />`);
+    }
+    if (ofH > 0) {
+      svg.insertAdjacentHTML('beforeend',
+        `<rect class="activity-bar${w.isCurrent ? ' current' : ''}" x="${x}" y="${Math.min(yOf, pad.top + usableH - 1)}" width="${barW}" height="${Math.max(1, ofH)}" rx="2" data-tip="${tip}" />`);
+    } else if (unofH === 0) {
+      svg.insertAdjacentHTML('beforeend',
+        `<rect class="activity-bar${w.isCurrent ? ' current' : ''}" x="${x}" y="${pad.top + usableH - 1}" width="${barW}" height="1" rx="2" data-tip="${tip}" opacity="0.25" />`);
+    }
+  });
+
+  // Sombra indicando conteúdo à esquerda quando há scroll
+  let shadow = scroll.parentElement.querySelector('.activity-scroll-shadow');
+  if (!shadow) {
+    shadow = document.createElement('div');
+    shadow.className = 'activity-scroll-shadow';
+    scroll.parentElement.appendChild(shadow);
+  }
+  function updateScrollShadow() {
+    shadow.classList.toggle('visible', scroll.scrollLeft > 8);
+  }
+  scroll.removeEventListener('scroll', updateScrollShadow);
+  scroll.addEventListener('scroll', updateScrollShadow);
+
+  // Rola pro fim (semanas mais recentes) por padrão
+  scroll.scrollLeft = scroll.scrollWidth;
+  updateScrollShadow();
+
+  // Pill de tendência
+  const pill = $('activityTrend');
+  pill.className = 'trend-pill ' + r.trendDir;
+  const arrow = r.trendDir === 'up' ? '▲' : r.trendDir === 'down' ? '▼' : '≈';
+  pill.textContent = `${arrow} ${r.trendLabel}`;
+
+  // Meta da seção
+  const meta = $('activityMeta');
+  if (meta) {
+    const firstStr = fmtDateShort(r.weeks[0].start.toISOString().slice(0,10));
+    const lastStr = fmtDateShort(r.weeks[r.weeks.length - 1].end.toISOString().slice(0,10));
+    meta.textContent = `${r.weeks.length} semanas · ${firstStr} → ${lastStr}`;
+  }
+
+  // Stats laterais
+  const cur = r.weeks[r.weeks.length - 1] || { official: r.currentCount, unofficial: 0 };
+  const peakUnof = r.peak12Week ? r.peak12Week.unofficial : 0;
+  const statsBox = $('activityStats');
+  const refLabel = includeCurrentWeek ? 'Esta semana' : 'Última semana';
+  statsBox.innerHTML = `
+    <div class="activity-stat current">
+      <div class="as-label">${refLabel}</div>
+      <div class="as-value">${cur.official}<span class="as-unof">${cur.unofficial ? ' +' + cur.unofficial : ''}</span></div>
+      <div class="as-extra">treino${cur.count === 1 ? '' : 's'}${cur.unofficial ? ' (com não oficial)' : ''}</div>
+    </div>
+    <div class="activity-stat">
+      <div class="as-label">Média 4 semanas</div>
+      <div class="as-value">${r.last4Avg.toFixed(1)}</div>
+      <div class="as-extra">treinos / sem</div>
+    </div>
+    <div class="activity-stat">
+      <div class="as-label">Pico (12 sem)</div>
+      <div class="as-value">${r.peak12}<span class="as-unof">${peakUnof ? ' +' + peakUnof : ''}</span></div>
+      <div class="as-extra">${r.peak12Week ? fmtDateShort(r.peak12Week.start.toISOString().slice(0,10)) : ''}</div>
+    </div>
+  `;
+}
+
+function renderHeatmap(list, stats) {
+  const heatmap = $('heatmap');
+  const monthsRow = $('heatmapMonths');
+  heatmap.innerHTML = '';
+  monthsRow.innerHTML = '';
+
+  // Mapa: dateStr -> treinos do dia (usado pelo tooltip e clique)
+  trainingsByDay = new Map();
+  list.forEach(t => {
+    if (!trainingsByDay.has(t.dateStr)) trainingsByDay.set(t.dateStr, []);
+    trainingsByDay.get(t.dateStr).push(t);
+  });
+  // Mapa agregado para colorir as células
+  const dayMap = new Map();
+  list.forEach(t => {
+    const d = dayMap.get(t.dateStr) || { count: 0, official: false, unofficial: false };
+    d.count++;
+    if (t.official) d.official = true; else d.unofficial = true;
+    dayMap.set(t.dateStr, d);
+  });
+
+  // Range: from first training Sunday to today's Saturday
+  const start = new Date(stats.first.date);
+  start.setDate(start.getDate() - start.getDay()); // back to Sunday
+  const end = new Date();
+  end.setDate(end.getDate() + (6 - end.getDay())); // forward to Saturday
+
+  const cells = [];
+  const monthMarkers = []; // {weekIndex, label}
+  let weekIndex = 0;
+  let lastMonth = -1;
+  for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+    const dow = d.getDay();
+    if (dow === 0 && d > start) weekIndex++;
+    const ds = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    const dayData = dayMap.get(ds);
+    const cell = document.createElement('div');
+    cell.className = 'heatmap-cell';
+    const todayMidnight = new Date(); todayMidnight.setHours(0,0,0,0);
+    if (dayData) {
+      const c = dayData.count;
+      const lvl = Math.min(c, 3);
+      cell.classList.add('l' + lvl, 'has-data');
+      if (dayData.unofficial && dayData.official) {
+        cell.classList.add('mixed');
+      } else if (dayData.unofficial && !dayData.official) {
+        cell.classList.add('unofficial-only');
+      }
+      cell.dataset.dateStr = ds;
+    } else if (d > todayMidnight) {
+      cell.classList.add('empty');
+    } else {
+      cell.classList.add('no-data');
+      cell.dataset.dateStr = ds;
+    }
+    cell.style.gridRow = (dow + 1);
+    cell.style.gridColumn = (weekIndex + 1);
+    cells.push(cell);
+
+    if (d.getMonth() !== lastMonth && d.getDate() <= 7) {
+      monthMarkers.push({ weekIndex, label: MONTH_NAMES[d.getMonth()] + (d.getMonth() === 0 ? ` ${d.getFullYear()}` : '') });
+      lastMonth = d.getMonth();
+    }
+  }
+
+  cells.forEach(c => heatmap.appendChild(c));
+  heatmap.style.gridTemplateColumns = `repeat(${weekIndex + 1}, 13px)`;
+
+  // Render month labels
+  const totalWidth = (weekIndex + 1) * 16;
+  monthsRow.style.width = totalWidth + 'px';
+  monthsRow.style.position = 'relative';
+  monthsRow.style.height = '14px';
+  monthMarkers.forEach(m => {
+    const lbl = document.createElement('div');
+    lbl.style.position = 'absolute';
+    lbl.style.left = (m.weekIndex * 16) + 'px';
+    lbl.textContent = m.label;
+    monthsRow.appendChild(lbl);
+  });
+
+  $('heatmapMeta').textContent = `${stats.uniqueDays} ${stats.uniqueDays === 1 ? 'dia treinado' : 'dias treinados'} · clique num dia pra abrir a foto`;
+}
+
+// ========== Tooltip & image helpers ==========
+async function getUrl(t) {
+  const key = `${t.belt.id}|${t.filename}`;
+  if (urlCache.has(key)) return urlCache.get(key);
+  const file = await t.fileHandle.getFile();
+  const url = URL.createObjectURL(file);
+  urlCache.set(key, url);
+  return url;
+}
+
+function positionTooltip(el) {
+  const tip = $('tooltip');
+  const r = el.getBoundingClientRect();
+  const tipRect = tip.getBoundingClientRect();
+  let left = r.left + r.width/2 + window.scrollX;
+  let top = r.top + window.scrollY - tipRect.height - 10;
+  if (top < window.scrollY + 8) top = r.bottom + window.scrollY + 10;
+  const halfW = tipRect.width / 2;
+  const minLeft = window.scrollX + halfW + 8;
+  const maxLeft = window.scrollX + document.documentElement.clientWidth - halfW - 8;
+  left = Math.max(minLeft, Math.min(maxLeft, left));
+  tip.style.left = left + 'px';
+  tip.style.top = top + 'px';
+}
+
+let activeHoverEl = null;
+let _heatmapTooltipTimer = null; // debounce timer para carregamento de imagens
+function setupGlobalHandlers() {
+  const tip = $('tooltip');
+  const tipText = tip.querySelector('.tip-text');
+  const tipImgs = tip.querySelector('.tip-imgs');
+  const tipHint = tip.querySelector('.tip-hint');
+
+  document.addEventListener('mouseover', e => {
+    const cell = e.target.closest('.heatmap-cell');
+    if (cell && cell.dataset.dateStr) {
+      activeHoverEl = cell;
+      // Mostra texto do tooltip imediatamente, mas debounce nas imagens
+      showHeatmapTooltipText(cell);
+      clearTimeout(_heatmapTooltipTimer);
+      _heatmapTooltipTimer = setTimeout(() => {
+        if (activeHoverEl === cell) loadHeatmapTooltipImages(cell);
+      }, 150);
+      return;
+    }
+    const el = e.target.closest('[data-tip]');
+    if (el) {
+      activeHoverEl = el;
+      tipText.textContent = el.dataset.tip;
+      tipImgs.innerHTML = '';
+      tipHint.textContent = '';
+      tip.classList.add('show');
+      positionTooltip(el);
+    }
+  });
+
+  document.addEventListener('mouseout', e => {
+    const cell = e.target.closest('.heatmap-cell');
+    const el = e.target.closest('[data-tip]');
+    if (cell || el) {
+      tip.classList.remove('show');
+      clearTimeout(_heatmapTooltipTimer);
+      activeHoverEl = null;
+    }
+  });
+
+  document.addEventListener('click', async e => {
+    const cell = e.target.closest('.heatmap-cell');
+    if (!cell || !cell.dataset.dateStr) return;
+    const dayTrainings = trainingsByDay.get(cell.dataset.dateStr);
+    if (!dayTrainings || !dayTrainings.length) return;
+    // Abre lightbox com todas as fotos do dia
+    const lb = $('lightbox');
+    const gallery = $('lightboxGallery');
+    const header = $('lightboxHeader');
+    const ds = cell.dataset.dateStr;
+    const dow = DOW_NAMES[new Date(ds + 'T00:00:00').getDay()];
+    header.textContent = `${dow}, ${fmtDate(ds)} — ${dayTrainings.length} ${dayTrainings.length === 1 ? 'foto' : 'fotos'}`;
+    gallery.innerHTML = '';
+    lb.classList.add('open');
+    const soloClass = dayTrainings.length === 1 ? ' solo' : '';
+    for (const t of dayTrainings) {
+      const img = document.createElement('img');
+      img.className = 'loading' + soloClass;
+      img.title = t.filename;
+      img.addEventListener('click', () => window.open(img.src, '_blank'));
+      gallery.appendChild(img);
+      try {
+        const url = await getUrl(t);
+        img.src = url;
+        img.classList.remove('loading');
+      } catch (err) {
+        img.alt = 'Erro ao carregar';
+        img.classList.remove('loading');
+      }
+    }
+  });
+
+  // Mostra texto do tooltip imediatamente (sem carregar imagens)
+  function showHeatmapTooltipText(cell) {
+    const ds = cell.dataset.dateStr;
+    const dayTrainings = trainingsByDay.get(ds) || [];
+    const dow = DOW_NAMES[new Date(ds + 'T00:00:00').getDay()];
+    tipImgs.innerHTML = '';
+    if (!dayTrainings.length) {
+      tipText.textContent = `${dow}, ${fmtDate(ds)} — sem treino`;
+      tipHint.textContent = '';
+    } else {
+      const n = dayTrainings.length;
+      const off = dayTrainings.filter(t => t.official).length;
+      const unof = n - off;
+      let label = `${dow}, ${fmtDate(ds)} — ${n} ${n === 1 ? 'treino' : 'treinos'}`;
+      if (unof && !off) label += ' (não oficial)';
+      else if (unof) label += ` (${unof} não oficial)`;
+      tipText.textContent = label;
+      tipHint.textContent = n > 1 ? `Clique pra escolher uma foto · ${n} no total` : 'Clique pra abrir a foto';
+    }
+    tip.classList.add('show');
+    positionTooltip(cell);
+  }
+
+  // Carrega imagens do tooltip (chamado após debounce de 150ms)
+  function loadHeatmapTooltipImages(cell) {
+    const ds = cell.dataset.dateStr;
+    const dayTrainings = trainingsByDay.get(ds) || [];
+    if (!dayTrainings.length) return;
+    tipImgs.innerHTML = '';
+    const imgsToShow = dayTrainings.slice(0, 3);
+    for (const t of imgsToShow) {
+      const img = document.createElement('img');
+      img.className = 'tip-img loading';
+      tipImgs.appendChild(img);
+      getUrl(t).then(url => {
+        if (activeHoverEl !== cell) return;
+        img.src = url;
+        img.onload = () => {
+          img.classList.remove('loading');
+          positionTooltip(cell);
+        };
+      }).catch(err => console.error('Erro ao carregar preview:', err));
+    }
+    positionTooltip(cell);
+  }
+
+  // Lightbox close handlers
+  const lb = $('lightbox');
+  $('lightboxClose').addEventListener('click', () => lb.classList.remove('open'));
+  lb.addEventListener('click', (e) => {
+    if (e.target === lb) lb.classList.remove('open');
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && lb.classList.contains('open')) lb.classList.remove('open');
+  });
+}
+
+function renderDow(stats) {
+  const grid = $('dowGrid');
+  grid.innerHTML = '';
+  const max = Math.max(...stats.dowCounts, 1);
+  // reorder: Mon-Sun
+  const order = [1,2,3,4,5,6,0];
+  order.forEach(i => {
+    const c = stats.dowCounts[i];
+    const pct = (c / max) * 100;
+    const row = document.createElement('div');
+    row.style.display = 'contents';
+    row.innerHTML = `
+      <div class="dow-label">${DOW_NAMES[i]}</div>
+      <div class="dow-bar"><div class="dow-bar-fill" style="width:${pct}%"></div></div>
+      <div class="dow-count">${c}</div>
+    `;
+    grid.appendChild(row);
+  });
+}
+
+// ==================== v2 render helpers ====================
+
+function fmtMonthKey(key) {
+  const [y, m] = key.split('-').map(Number);
+  return `${MONTH_NAMES[m-1]}/${String(y).slice(2)}`;
+}
+function fmtMonthKeyLong(key) {
+  const [y, m] = key.split('-').map(Number);
+  return `${MONTH_NAMES[m-1]} ${y}`;
+}
+function fmtWeekStart(d) {
+  const end = new Date(d);
+  end.setDate(end.getDate() + 6);
+  return `${d.getDate()}/${d.getMonth()+1} – ${end.getDate()}/${end.getMonth()+1}`;
+}
+
+function miniStat({ label, value, unit, extra, accent }) {
+  return `
+    <div class="mini-stat${accent ? ' accent' : ''}">
+      <div class="ms-label">${label}</div>
+      <div class="ms-value">${value}${unit ? `<span class="ms-unit">${unit}</span>` : ''}</div>
+      ${extra ? `<div class="ms-extra">${extra}</div>` : ''}
+    </div>
+  `;
+}
+
+function renderVolumeMetrics(stats) {
+  const container = $('volumeMetrics');
+  const { total, uniqueDays, weeklyAvg, monthlyAvg, dowCounts, mostActiveMonth, mostActiveWeek } = stats;
+
+  const peakDow = dowCounts.indexOf(Math.max(...dowCounts));
+  const peakDowName = DOW_NAMES[peakDow];
+  const items = [];
+  items.push(miniStat({
+    label: 'Total de treinos',
+    value: total,
+    extra: `${uniqueDays} ${uniqueDays === 1 ? 'dia diferente' : 'dias diferentes'}`,
+  }));
+  items.push(miniStat({
+    label: 'Média semanal',
+    value: weeklyAvg,
+    unit: '/sem',
+  }));
+  items.push(miniStat({
+    label: 'Média mensal',
+    value: monthlyAvg,
+    unit: '/mês',
+  }));
+  items.push(miniStat({
+    label: 'Dia mais forte',
+    value: peakDowName,
+    extra: `${dowCounts[peakDow]} treinos no total`,
+    accent: true,
+  }));
+  if (mostActiveMonth) {
+    items.push(miniStat({
+      label: 'Mês mais ativo',
+      value: mostActiveMonth.count,
+      unit: 'treinos',
+      extra: fmtMonthKeyLong(mostActiveMonth.key),
+    }));
+  }
+  if (mostActiveWeek) {
+    items.push(miniStat({
+      label: 'Semana mais ativa',
+      value: mostActiveWeek.count,
+      unit: 'treinos',
+      extra: fmtWeekStart(mostActiveWeek.start),
+    }));
+  }
+  container.innerHTML = items.join('');
+}
+
+function renderConsistency(stats) {
+  // Atualiza labels dinâmicas do streak
+  const stSub = $('streakSubtitle');
+  if (stSub) stSub.textContent = `streaks de semanas com ${STREAK_MIN_TRAININGS}+ treinos`;
+  const stLeg = $('streakLegStreak');
+  if (stLeg) stLeg.textContent = `streak (semanas seguidas com ${STREAK_MIN_TRAININGS}+ treinos)`;
+  const stGap = $('streakLegGap');
+  if (stGap) stGap.textContent = `gap (semanas com menos de ${STREAK_MIN_TRAININGS} treinos)`;
+
+  const container = $('consistencyMetrics');
+  const items = [];
+  items.push(miniStat({
+    label: 'Maior streak',
+    value: stats.longest,
+    unit: stats.longest === 1 ? 'semana' : 'semanas',
+    extra: stats.longest > 0 && stats.longestStart
+      ? `${fmtDateShort(stats.longestStart.toISOString().slice(0,10))} → ${fmtDateShort(stats.longestEnd.toISOString().slice(0,10))}`
+      : '',
+    accent: true,
+  }));
+  items.push(miniStat({
+    label: 'Streak atual',
+    value: stats.currentStreak,
+    unit: stats.currentStreak === 1 ? 'semana' : 'semanas',
+    extra: stats.currentStreak === 0
+      ? (stats.weeksSinceLastTraining ? `${stats.weeksSinceLastTraining} sem sem ${STREAK_MIN_TRAININGS}+ treinos` : '—')
+      : (stats.weeksSinceLastTraining === 0
+          ? (includeCurrentWeek ? 'inclui esta semana' : 'até a semana passada')
+          : (includeCurrentWeek ? 'até semana passada' : 'até há 2 semanas')),
+  }));
+  if (stats.longestGap) {
+    items.push(miniStat({
+      label: 'Maior gap',
+      value: stats.longestGap.length,
+      unit: stats.longestGap.length === 1 ? 'semana' : 'semanas',
+      extra: `${fmtDateShort(stats.longestGap.voidStart.toISOString().slice(0,10))} → ${fmtDateShort(stats.longestGap.voidEnd.toISOString().slice(0,10))}`,
+    }));
+  } else {
+    items.push(miniStat({
+      label: 'Maior gap',
+      value: '—',
+      extra: 'sem intervalos ainda',
+    }));
+  }
+  items.push(miniStat({
+    label: 'Taxa de presença',
+    value: Math.round(stats.trainedRatio * 100),
+    unit: '%',
+    extra: `${stats.uniqueWeekdays} de ${stats.totalWeekdays} dias úteis`,
+  }));
+  container.innerHTML = items.join('');
+}
+
+function renderTimelineSG(stats) {
+  const svg = $('timelineSvg');
+  svg.innerHTML = '';
+  if (!stats.streaks.length) return;
+
+  // Streaks/gaps são por SEMANA agora.
+  // segment.length = quantidade de semanas
+  const segments = [];
+  for (let i = 0; i < stats.streaks.length; i++) {
+    segments.push({ type: 'streak', length: stats.streaks[i].length, ref: stats.streaks[i] });
+    if (i < stats.gaps.length) {
+      segments.push({ type: 'gap', length: stats.gaps[i].length, ref: stats.gaps[i] });
+    }
+  }
+  const totalSpan = segments.reduce((s, x) => s + Math.max(1, x.length), 0);
+  const W = 600, H = 90;
+  const pad = { top: 8, bottom: 22, left: 0, right: 0 };
+  const usableW = W - pad.left - pad.right;
+  const barH = H - pad.top - pad.bottom;
+
+  function isoDateStr(d) { return d.toISOString().slice(0,10); }
+
+  let x = pad.left;
+  segments.forEach((seg) => {
+    const w = (Math.max(1, seg.length) / totalSpan) * usableW;
+    const cls = seg.type === 'streak' ? 'tl-streak' : 'tl-gap';
+    let tip;
+    if (seg.type === 'streak') {
+      tip = `Streak: ${seg.length} ${seg.length === 1 ? 'semana' : 'semanas'} · ${fmtDateShort(isoDateStr(seg.ref.start))} → ${fmtDateShort(isoDateStr(seg.ref.end))}`;
+    } else {
+      tip = `Gap: ${seg.length} ${seg.length === 1 ? 'semana' : 'semanas'} sem treino · ${fmtDateShort(isoDateStr(seg.ref.voidStart))} → ${fmtDateShort(isoDateStr(seg.ref.voidEnd))}`;
+    }
+    svg.insertAdjacentHTML('beforeend',
+      `<rect class="${cls}" x="${x}" y="${pad.top}" width="${Math.max(1, w)}" height="${barH}" data-tip="${tip}" />`);
+    x += w;
+  });
+
+  const firstStr = fmtDateShort(isoDateStr(stats.streaks[0].start));
+  const lastStr = fmtDateShort(isoDateStr(stats.streaks[stats.streaks.length - 1].end));
+  svg.insertAdjacentHTML('beforeend',
+    `<text class="tl-axis" x="0" y="${H - 6}" text-anchor="start">${firstStr}</text>
+     <text class="tl-axis" x="${W}" y="${H - 6}" text-anchor="end">${lastStr}</text>`);
+}
+
+function renderCumulativeChart(stats) {
+  const svg = $('cumulativeChart');
+  svg.innerHTML = '';
+  const cum = stats.cumulative;
+  const cumAll = stats.cumulativeAll || cum;
+  if (!cum.length) return;
+
+  const W = 600, H = 240;
+  const pad = { top: 16, right: 16, bottom: 36, left: 40 };
+  const minDate = Math.min(cum[0].date.getTime(), cumAll[0].date.getTime());
+  const maxTotal = Math.max(cum[cum.length - 1].total, cumAll[cumAll.length - 1].total);
+  // Include next milestone in Y scale so projection fits
+  const milestone50 = (Math.floor(cum[cum.length - 1].total / 50) + 1) * 50;
+  const niceMax = Math.ceil(Math.max(maxTotal, milestone50) / 50) * 50 || 50;
+  // Compute projected ETA for next milestone to extend X axis
+  const _projMonthly = parseFloat(stats.monthlyAvg) || 0;
+  const _projRemaining = milestone50 - cum[cum.length - 1].total;
+  const _projEtaMs = _projMonthly > 0 && _projRemaining > 0
+    ? Date.now() + (_projRemaining / _projMonthly) * 30.4375 * 86400000
+    : Date.now();
+  const maxDate = Math.max(cum[cum.length - 1].date.getTime(), cumAll[cumAll.length - 1].date.getTime(), Date.now(), _projEtaMs);
+
+  function xFor(t) {
+    return pad.left + ((t - minDate) / (maxDate - minDate)) * (W - pad.left - pad.right);
+  }
+  function yFor(v) {
+    return pad.top + (1 - v / niceMax) * (H - pad.top - pad.bottom);
+  }
+
+  // Gradient
+  svg.insertAdjacentHTML('beforeend',
+    `<defs><linearGradient id="cumGradient" x1="0" y1="0" x2="0" y2="1">
+       <stop offset="0%" stop-color="#ff5722" stop-opacity="0.45" />
+       <stop offset="100%" stop-color="#ff5722" stop-opacity="0" />
+     </linearGradient></defs>`);
+
+  // Grid horizontal
+  for (let i = 0; i <= 4; i++) {
+    const v = Math.round(niceMax * i / 4);
+    const y = yFor(v);
+    svg.insertAdjacentHTML('beforeend',
+      `<line class="cum-grid" x1="${pad.left}" x2="${W - pad.right}" y1="${y}" y2="${y}" />
+       <text class="cum-axis" x="${pad.left - 6}" y="${y + 3}" text-anchor="end">${v}</text>`);
+  }
+
+  // Linha "todos" (oficial + não oficial) — desenhada por baixo
+  if (cumAll.length && cumAll[cumAll.length - 1].total > cum[cum.length - 1].total) {
+    let allD = `M ${xFor(cumAll[0].date.getTime())} ${yFor(cumAll[0].total)}`;
+    cumAll.forEach((p, i) => {
+      if (i === 0) return;
+      allD += ` L ${xFor(p.date.getTime())} ${yFor(p.total)}`;
+    });
+    const todayXAll = xFor(Math.max(cumAll[cumAll.length - 1].date.getTime(), Date.now()));
+    allD += ` L ${todayXAll} ${yFor(cumAll[cumAll.length - 1].total)}`;
+    svg.insertAdjacentHTML('beforeend', `<path class="cum-line-all" d="${allD}" />`);
+  }
+
+  // Path para área e linha (oficiais)
+  let pathD = `M ${xFor(cum[0].date.getTime())} ${yFor(cum[0].total)}`;
+  cum.forEach((p, i) => {
+    if (i === 0) return;
+    pathD += ` L ${xFor(p.date.getTime())} ${yFor(p.total)}`;
+  });
+  // Estende linha até hoje (mesma altura do último ponto)
+  const todayX = xFor(Math.max(cum[cum.length - 1].date.getTime(), Date.now()));
+  pathD += ` L ${todayX} ${yFor(cum[cum.length - 1].total)}`;
+
+  const areaD = pathD + ` L ${todayX} ${yFor(0)} L ${xFor(cum[0].date.getTime())} ${yFor(0)} Z`;
+  svg.insertAdjacentHTML('beforeend', `<path class="cum-area" d="${areaD}" />`);
+  svg.insertAdjacentHTML('beforeend', `<path class="cum-line" d="${pathD}" />`);
+
+  // Marcadores nos múltiplos de 50 (ou 25 se total < 100)
+  const milestoneStep = maxTotal >= 200 ? 100 : (maxTotal >= 100 ? 50 : 25);
+  const seen = new Set();
+  cum.forEach(p => {
+    const m = Math.floor(p.total / milestoneStep) * milestoneStep;
+    if (m > 0 && !seen.has(m) && m <= maxTotal) {
+      seen.add(m);
+      svg.insertAdjacentHTML('beforeend',
+        `<circle class="cum-marker" cx="${xFor(p.date.getTime())}" cy="${yFor(p.total)}" r="4" data-tip="${m}º treino · ${fmtDate(p.dateStr)}" />`);
+    }
+  });
+
+  // ===== Projeção até o próximo marco =====
+  const currentTotal = cum[cum.length - 1].total;
+  const nextMilestone = stats.nextMilestoneTotal;
+  if (nextMilestone > currentTotal && _projMonthly > 0) {
+    const fromX = xFor(Date.now());
+    const fromY = yFor(currentTotal);
+    const toX = xFor(_projEtaMs);
+    const milestoneY = yFor(nextMilestone);
+
+    // Dashed projection line
+    svg.insertAdjacentHTML('beforeend',
+      `<line class="cum-projection" x1="${fromX}" y1="${fromY}" x2="${toX}" y2="${milestoneY}"
+        stroke-dasharray="5 4" />`);
+    // Milestone target line
+    svg.insertAdjacentHTML('beforeend',
+      `<line class="cum-milestone-line" x1="${pad.left}" x2="${W - pad.right}" y1="${milestoneY}" y2="${milestoneY}"
+        stroke-dasharray="3 3" />`);
+    // Milestone label
+    svg.insertAdjacentHTML('beforeend',
+      `<text class="cum-milestone-label" x="${W - pad.right + 2}" y="${milestoneY + 3}" text-anchor="start">${nextMilestone}</text>`);
+    // Dot at projected arrival
+    svg.insertAdjacentHTML('beforeend',
+      `<circle class="cum-proj-dot" cx="${toX}" cy="${milestoneY}" r="3.5"
+        data-tip="Meta: treino #${nextMilestone} · ~${fmtDateShort(new Date(_projEtaMs).toISOString().slice(0,10))}" />`);
+  }
+
+  // Eixo X — labels de datas: início, marcos alcançados, hoje, projeção
+  const xLabels = [];
+  // Início
+  xLabels.push({ x: pad.left, text: fmtDateShort(cum[0].dateStr), anchor: 'start' });
+  // Marcos alcançados
+  const seenX = new Set();
+  cum.forEach(p => {
+    const m = Math.floor(p.total / milestoneStep) * milestoneStep;
+    if (m > 0 && !seenX.has(m) && m <= maxTotal) {
+      seenX.add(m);
+      const mx = xFor(p.date.getTime());
+      xLabels.push({ x: mx, text: fmtDateShort(p.dateStr), anchor: 'middle' });
+    }
+  });
+  // Hoje
+  const hojeX = xFor(Date.now());
+  xLabels.push({ x: hojeX, text: 'hoje', anchor: 'middle' });
+  // Projeção (se existe)
+  if (nextMilestone > currentTotal && _projMonthly > 0) {
+    const projX = xFor(_projEtaMs);
+    xLabels.push({ x: projX, text: '~' + fmtDateShort(new Date(_projEtaMs).toISOString().slice(0,10)), anchor: 'end' });
+  }
+  // Remover labels sobrepostas (manter se distância > 50px)
+  xLabels.sort((a, b) => a.x - b.x);
+  const finalLabels = [];
+  xLabels.forEach(lbl => {
+    if (finalLabels.length === 0 || Math.abs(lbl.x - finalLabels[finalLabels.length - 1].x) > 50) {
+      finalLabels.push(lbl);
+    }
+  });
+  finalLabels.forEach(lbl => {
+    svg.insertAdjacentHTML('beforeend',
+      `<text class="cum-axis" x="${lbl.x}" y="${H - 12}" text-anchor="${lbl.anchor}">${lbl.text}</text>`);
+  });
+}
+
+function renderMultiDays(stats) {
+  // Summary mini-stats
+  const summary = $('multiSummary');
+  const multiDays = [...stats.dayDistribution.entries()]
+    .filter(([n]) => n >= 2)
+    .reduce((s, [, c]) => s + c, 0);
+  const tripleDays = [...stats.dayDistribution.entries()]
+    .filter(([n]) => n >= 3)
+    .reduce((s, [, c]) => s + c, 0);
+
+  summary.innerHTML = [
+    miniStat({
+      label: 'Recorde no dia',
+      value: stats.recordDayCount,
+      unit: stats.recordDayCount === 1 ? 'treino' : 'treinos',
+      extra: stats.recordDayDate ? fmtDate(stats.recordDayDate) : '',
+      accent: true,
+    }),
+    miniStat({
+      label: 'Dias duplos+',
+      value: multiDays,
+      extra: `de ${stats.uniqueDays} dias`,
+    }),
+    miniStat({
+      label: 'Dias triplos+',
+      value: tripleDays,
+      extra: tripleDays === 0 ? 'ainda nenhum' : 'ou mais',
+    }),
+  ].join('');
+
+  // Distribution bars
+  const grid = $('multiGrid');
+  grid.innerHTML = '';
+  const maxN = Math.max(...stats.dayDistribution.keys(), 1);
+  const maxC = Math.max(...stats.dayDistribution.values(), 1);
+  for (let n = 1; n <= Math.max(maxN, 3); n++) {
+    const c = stats.dayDistribution.get(n) || 0;
+    const pct = (c / maxC) * 100;
+    const row = document.createElement('div');
+    row.style.display = 'contents';
+    row.innerHTML = `
+      <div class="multi-label">${n} treino${n === 1 ? '' : 's'}</div>
+      <div class="multi-bar"><div class="multi-bar-fill" style="width:${pct}%"></div></div>
+      <div class="multi-count">${c}<span class="h">d</span></div>
+    `;
+    grid.appendChild(row);
+  }
+}
+
+function renderDowHeatmap(stats) {
+  const grid = $('dowHeatmap');
+  grid.innerHTML = '';
+  const order = [1,2,3,4,5,6,0]; // Mon-Sun
+  const totals = stats.dowCounts.map((c, i) => c + (stats.dowCountsUnof ? stats.dowCountsUnof[i] : 0));
+  const maxC = Math.max(...totals, 1);
+  const peakIdx = stats.dowCounts.indexOf(Math.max(...stats.dowCounts));
+  order.forEach(i => {
+    const c = stats.dowCounts[i];
+    const u = stats.dowCountsUnof ? stats.dowCountsUnof[i] : 0;
+    const isPeak = i === peakIdx && c > 0;
+    const pct = c > 0 ? Math.round((c / maxC) * 100) : 0;
+    const cell = document.createElement('div');
+    cell.className = 'dow-cell' + (isPeak ? ' peak' : '');
+    cell.innerHTML = `
+      <div class="dh-label">${DOW_NAMES[i]}</div>
+      <div class="dh-count">${c}${u ? `<span class="dh-unof"> +${u}</span>` : ''}</div>
+      <div class="dh-pct">${pct}% do pico</div>
+    `;
+    grid.appendChild(cell);
+  });
+}
+
+function renderMilestones(stats) {
+  const grid = $('badgeGrid');
+  grid.innerHTML = '';
+
+  // Escalas
+  const trainingTargets = [10, 25, 50, 100, 200, 300, 500, 750, 1000, 1500, 2000, 3000, 5000, 7500, 10000];
+  const unofficialTargets = [10, 25, 50, 100, 200, 300, 500, 750, 1000, 1500];
+  const streakTargets = [2, 4, 8, 12, 16, 26, 52, 78, 104, 156]; // semanas: até 3 anos
+  const multiDayTargets = [2, 3]; // sem 4-no-dia (raro demais pra valer badge)
+
+  // Totais
+  const totalTrainings = stats.total;
+  const totalUnofficial = effectiveTrainings.filter(t => !t.official).length;
+
+  // Multi-day: contar dias com >=N treinos (usando TODOS os treinos, oficial+não)
+  const allPerDay = new Map();
+  effectiveTrainings.forEach(t => allPerDay.set(t.dateStr, (allPerDay.get(t.dateStr) || 0) + 1));
+  const multiDayCounts = new Map();
+  multiDayTargets.forEach(n => multiDayCounts.set(n, 0));
+  allPerDay.forEach((cnt) => {
+    multiDayTargets.forEach(n => {
+      if (cnt >= n) multiDayCounts.set(n, multiDayCounts.get(n) + 1);
+    });
+  });
+
+  // Semanas "cheias" (todos os 5 dias úteis Seg–Sex com pelo menos 1 treino)
+  // e o maior run consecutivo de semanas cheias.
+  const weekdayHitsByWeek = new Map(); // weekStartTime -> Set<dow 1..5>
+  effectiveTrainings.forEach(t => {
+    const dow = t.date.getDay(); // 0..6 (0=dom,6=sáb)
+    if (dow < 1 || dow > 5) return;
+    const k = weekStartOf(t.date).getTime();
+    if (!weekdayHitsByWeek.has(k)) weekdayHitsByWeek.set(k, new Set());
+    weekdayHitsByWeek.get(k).add(dow);
+  });
+  const fullWeeks = []; // weekStartTime ordenadas, asc
+  weekdayHitsByWeek.forEach((s, k) => { if (s.size >= 5) fullWeeks.push(k); });
+  fullWeeks.sort((a, b) => a - b);
+  // Conta total de semanas cheias e maior run consecutivo
+  let fullWeekTotal = fullWeeks.length;
+  let longestFullWeekRun = 0, curRun = 0, prevK = null;
+  fullWeeks.forEach(k => {
+    if (prevK !== null && Math.round((k - prevK) / (7 * 86400000)) === 1) {
+      curRun++;
+    } else {
+      curRun = 1;
+    }
+    if (curRun > longestFullWeekRun) longestFullWeekRun = curRun;
+    prevK = k;
+  });
+
+  // Ícones por escala
+  function trainIcon(n) {
+    if (n >= 10000) return '🌟';
+    if (n >= 7500) return '🪐';
+    if (n >= 5000) return '☄️';
+    if (n >= 3000) return '🌌';
+    if (n >= 2000) return '🚀';
+    if (n >= 1500) return '🛸';
+    if (n >= 1000) return '🏆';
+    if (n >= 750) return '👑';
+    if (n >= 500) return '💎';
+    if (n >= 300) return '🥇';
+    if (n >= 200) return '🥈';
+    if (n >= 100) return '💯';
+    if (n >= 50) return '🔥';
+    if (n >= 25) return '⭐';
+    return '🎯';
+  }
+  function unofIcon(n) {
+    if (n >= 10000) return '🌍';
+    if (n >= 7500) return '🏔️';
+    if (n >= 5000) return '🗻';
+    if (n >= 3000) return '🌋';
+    if (n >= 2000) return '🏞️';
+    if (n >= 1500) return '🌅';
+    if (n >= 1000) return '🌄';
+    if (n >= 500) return '🌳';
+    if (n >= 200) return '🌲';
+    if (n >= 100) return '🍃';
+    if (n >= 50) return '🌿';
+    if (n >= 25) return '🌱';
+    return '☘️';
+  }
+  function streakIcon(n) {
+    if (n >= 156) return '👑';
+    if (n >= 104) return '⚡';
+    if (n >= 78) return '🚀';
+    if (n >= 52) return '🏆';
+    if (n >= 26) return '🔥';
+    if (n >= 12) return '💪';
+    if (n >= 8) return '🎯';
+    return '✨';
+  }
+  function multiIcon(n) {
+    if (n >= 4) return '🚀';
+    if (n >= 3) return '⚔️';
+    return '⚡';
+  }
+
+  function findNext(targets, current) {
+    return targets.find(t => t > current);
+  }
+  function etaStr(remaining, perWeek) {
+    if (remaining <= 0 || perWeek <= 0) return null;
+    const days = Math.round((remaining / perWeek) * 7);
+    const eta = new Date();
+    eta.setDate(eta.getDate() + days);
+    return `~${eta.toLocaleDateString('pt-BR', { month: 'short', year: 'numeric' })}`;
+  }
+
+  const perWeek = parseFloat(stats.weeklyAvg) || 0;
+  const perWeekUnof = (() => {
+    if (!stats.totalDays || !totalUnofficial) return 0;
+    const totalWeeks = Math.max(1, stats.totalDays / 7);
+    return totalUnofficial / totalWeeks;
+  })();
+
+  // Construtor de badge: target alvo, current contagem, suffix sufixo do label
+  function makeBadge({ target, current, label, icon, isNext, perWeekRate }) {
+    const unlocked = current >= target;
+    const remaining = Math.max(0, target - current);
+    const desc = unlocked
+      ? 'desbloqueado'
+      : (isNext ? `${remaining} para chegar` : `${current}/${target}`);
+    const progress = unlocked ? 1 : Math.min(1, current / target);
+    const eta = (!unlocked && isNext) ? etaStr(remaining, perWeekRate || 0) : null;
+    return { name: label, icon, desc, progress, unlocked, eta, isNext: !!isNext && !unlocked };
+  }
+
+  const subsections = [];
+
+  // 1) Treinos
+  const nextTr = findNext(trainingTargets, totalTrainings);
+  subsections.push({
+    title: 'Treinos',
+    badges: trainingTargets.map(t => makeBadge({
+      target: t, current: totalTrainings, label: `${t} treinos`,
+      icon: trainIcon(t), isNext: t === nextTr, perWeekRate: perWeek,
+    })),
+  });
+
+  // 2) Treinos não oficiais
+  const nextUnof = findNext(unofficialTargets, totalUnofficial);
+  subsections.push({
+    title: 'Treinos não oficiais',
+    badges: unofficialTargets.map(t => makeBadge({
+      target: t, current: totalUnofficial, label: `${t} não oficiais`,
+      icon: unofIcon(t), isNext: t === nextUnof, perWeekRate: perWeekUnof,
+    })),
+  });
+
+  // 3) Streaks (em semanas) — usa stats.longest (já considera todos os treinos)
+  const longestStreak = stats.longest;
+  const nextStr = findNext(streakTargets, longestStreak);
+  subsections.push({
+    title: 'Streaks (semanas consecutivas)',
+    badges: streakTargets.map(t => makeBadge({
+      target: t, current: longestStreak, label: `${t} sem`,
+      icon: streakIcon(t), isNext: t === nextStr,
+    })),
+  });
+
+  // 4) Teste de limites — multi-treino no dia + semanas cheias de dias úteis
+  const limitBadges = [];
+  // 4a) Multi-treino no mesmo dia (2 e 3)
+  multiDayTargets.forEach(t => {
+    const c = multiDayCounts.get(t);
+    const unlocked = c >= 1;
+    limitBadges.push({
+      name: `${t} no mesmo dia`,
+      icon: multiIcon(t),
+      desc: unlocked ? `${c} ${c === 1 ? 'vez' : 'vezes'}` : 'ainda não',
+      progress: unlocked ? 1 : 0,
+      unlocked,
+      eta: null,
+      isNext: !unlocked,
+    });
+  });
+  // 4b) Semana cheia de dias úteis (Seg–Sex todos com pelo menos 1 treino)
+  // Para 1, 2 e 3 semanas cheias seguidas
+  const fullWeekDefs = [
+    { runs: 1, name: 'Semana cheia',    icon: '🗓️',  desc: 'todos os dias úteis de uma semana' },
+    { runs: 2, name: 'Quinzena cheia',  icon: '📆',  desc: '2 semanas seguidas, dias úteis 100%' },
+    { runs: 3, name: 'Tríade cheia',    icon: '🔥',  desc: '3 semanas seguidas, dias úteis 100%' },
+  ];
+  fullWeekDefs.forEach(def => {
+    const unlocked = longestFullWeekRun >= def.runs;
+    let descText;
+    if (unlocked) {
+      // Quantas vezes alcançou esse run (de pelo menos N) — conta runs separados
+      let achieved = 0, run = 0, prev = null;
+      fullWeeks.forEach(k => {
+        if (prev !== null && Math.round((k - prev) / (7 * 86400000)) === 1) run++;
+        else run = 1;
+        if (run === def.runs) achieved++;
+        prev = k;
+      });
+      descText = achieved > 0
+        ? `${achieved} ${achieved === 1 ? 'vez' : 'vezes'} · ${def.desc}`
+        : def.desc;
+    } else {
+      descText = `${longestFullWeekRun}/${def.runs} · ${def.desc}`;
+    }
+    limitBadges.push({
+      name: def.name,
+      icon: def.icon,
+      desc: descText,
+      progress: unlocked ? 1 : (longestFullWeekRun / def.runs),
+      unlocked,
+      eta: null,
+      isNext: !unlocked && longestFullWeekRun + 1 === def.runs,
+    });
+  });
+  subsections.push({
+    title: 'Teste de limites',
+    badges: limitBadges,
+  });
+
+  // Escolhe número de colunas que divide o total bem (sem badge sozinha numa linha)
+  function chooseCols(n) {
+    // procura o maior divisor de n entre 5 e 2 que evite órfãos
+    for (let c = 5; c >= 2; c--) {
+      if (n % c === 0) return c;
+    }
+    return n; // fallback: 1 linha só
+  }
+
+  // Render subseções
+  subsections.forEach(sub => {
+    const wrap = document.createElement('div');
+    wrap.className = 'badge-subsection';
+    wrap.innerHTML = `<h3 class="badge-subsection-title">${sub.title}</h3>`;
+    const subGrid = document.createElement('div');
+    subGrid.className = 'badge-subsection-grid';
+    const cols = chooseCols(sub.badges.length);
+    subGrid.style.gridTemplateColumns = `repeat(${cols}, minmax(0, 1fr))`;
+    subGrid.dataset.cols = cols;
+    sub.badges.forEach(m => {
+      const card = document.createElement('div');
+      const isNextHighlight = m.isNext && !m.unlocked;
+      card.className = 'milestone ' + (m.unlocked ? 'unlocked' : 'locked') + (isNextHighlight ? ' next' : '');
+      const progressHtml = (!m.unlocked && m.progress > 0)
+        ? `<div class="ms-progress"><div class="ms-progress-fill" style="width:${Math.min(100, Math.round(m.progress * 100))}%"></div></div>`
+        : '';
+      const etaHtml = m.eta
+        ? `<div class="ms-eta">${m.eta}</div>`
+        : (m.unlocked ? `<div class="ms-eta">✓ desbloqueado</div>` : '');
+      card.innerHTML = `
+        <span class="ms-icon">${m.icon}</span>
+        <div class="ms-name">${m.name}</div>
+        <div class="ms-desc">${m.desc || ''}</div>
+        ${progressHtml}
+        ${etaHtml}
+      `;
+      subGrid.appendChild(card);
+    });
+    wrap.appendChild(subGrid);
+    grid.appendChild(wrap);
+  });
+}
+
+// ========== Buttons ==========
+async function setupClick() {
+  if (dirHandle) {
+    if (await ensurePermission(dirHandle)) {
+      await activate();
+      return;
+    }
+  }
+  await pickFolder();
+}
+$('setupBtn').addEventListener('click', setupClick);
+$('refreshBtn').addEventListener('click', () => {
+  scan();
+  showToast('Atualizado');
+});
+
+// Include current week toggle
+const cwToggle = $('includeCurrentWeekToggle');
+if (cwToggle) {
+  cwToggle.checked = includeCurrentWeek;
+  cwToggle.addEventListener('change', (e) => {
+    includeCurrentWeek = e.target.checked;
+    try { localStorage.setItem('includeCurrentWeek', includeCurrentWeek ? '1' : '0'); } catch {}
+    if (trainings.length) render();
+  });
+}
+
+// ========== Treinos section filter ==========
+document.addEventListener('click', (ev) => {
+  const pill = ev.target.closest('.hf-pill[data-tfilter]');
+  if (!pill) return;
+  ev.stopPropagation();
+  const mode = pill.dataset.tfilter;
+  if (mode === treinosFilterMode) return;
+  treinosFilterMode = mode;
+  document.querySelectorAll('.hf-pill[data-tfilter]').forEach(p => p.classList.toggle('active', p.dataset.tfilter === mode));
+  if (trainings.length) {
+    invalidateStatsCache();
+    const base = effectiveTrainings.length ? effectiveTrainings : trainings;
+    const filtered = treinosFilterMode === 'official' ? base.filter(t => t.official)
+                   : treinosFilterMode === 'unofficial' ? base.filter(t => !t.official)
+                   : base;
+    const stats = computeStats(filtered, filtered);
+    renderHeatmap(filtered, stats);
+    renderVolumeMetrics(stats);
+    renderRecentActivity(stats);
+    renderCumulativeChart(stats);
+  }
+});
+
+// ========== Settings panel ==========
+(function initSettings() {
+  const overlay = $('settingsOverlay');
+  const btn = $('settingsBtn');
+  if (!overlay || !btn) return;
+
+  function openSettings() {
+    // Preenche campos com valores atuais
+    $('cfgBranca').value = BELT_RULES.branca.aulasPerGrau;
+    $('cfgAzul').value = BELT_RULES.azul.aulasPerGrau;
+    $('cfgRoxa').value = BELT_RULES.roxa.aulasPerGrau;
+    $('cfgMarrom').value = BELT_RULES.marrom.aulasPerGrau;
+    $('cfgStreakMin').value = STREAK_MIN_TRAININGS;
+    $('cfgGrauOverride').value = GRAU_OVERRIDE;
+    $('cfgAvgPeriod').value = WEEKLY_AVG_PERIOD;
+    overlay.classList.add('open');
+  }
+
+  function closeSettings() {
+    overlay.classList.remove('open');
+  }
+
+  function saveSettings() {
+    const branca = parseInt($('cfgBranca').value) || BELT_RULES_DEFAULTS.branca;
+    const azul = parseInt($('cfgAzul').value) || BELT_RULES_DEFAULTS.azul;
+    const roxa = parseInt($('cfgRoxa').value) || BELT_RULES_DEFAULTS.roxa;
+    const marrom = parseInt($('cfgMarrom').value) || BELT_RULES_DEFAULTS.marrom;
+    const streakMin = Math.max(1, Math.min(7, parseInt($('cfgStreakMin').value) || 2));
+    const grauOverride = $('cfgGrauOverride').value;
+    const validPeriods = ['3m', '6m', '12m', 'all'];
+    const weeklyAvgPeriod = validPeriods.includes($('cfgAvgPeriod').value) ? $('cfgAvgPeriod').value : '3m';
+
+    BELT_RULES.branca.aulasPerGrau = branca;
+    BELT_RULES.azul.aulasPerGrau = azul;
+    BELT_RULES.roxa.aulasPerGrau = roxa;
+    BELT_RULES.marrom.aulasPerGrau = marrom;
+    STREAK_MIN_TRAININGS = streakMin;
+    GRAU_OVERRIDE = grauOverride;
+    WEEKLY_AVG_PERIOD = weeklyAvgPeriod;
+
+    try {
+      localStorage.setItem('jja-settings', JSON.stringify({
+        beltRules: { branca, azul, roxa, marrom },
+        streakMin,
+        grauOverride,
+        weeklyAvgPeriod,
+      }));
+    } catch {}
+
+    closeSettings();
+    if (trainings.length) render();
+    showToast('Configurações salvas');
+  }
+
+  btn.addEventListener('click', openSettings);
+  $('settingsCancel').addEventListener('click', closeSettings);
+  $('settingsSave').addEventListener('click', saveSettings);
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) closeSettings();
+  });
+})();
+
+// ========== Collapsible sections ==========
+document.addEventListener('click', (ev) => {
+  if (ev.target.closest('.hf-pill')) return;
+  const header = ev.target.closest('.collapsible-header');
+  if (!header) return;
+  const section = header.closest('.collapsible');
+  if (!section) return;
+  section.classList.toggle('collapsed');
+  // Persistir estado
+  if (section.id) {
+    try { localStorage.setItem('collapsed:' + section.id, section.classList.contains('collapsed') ? '1' : '0'); } catch {}
+  }
+});
+// Restaurar estado de collapsibles
+document.querySelectorAll('.collapsible').forEach(sec => {
+  if (!sec.id) return;
+  // Marcos sempre inicia colapsado
+  if (sec.id === 'badgesSection') { sec.classList.add('collapsed'); return; }
+  try {
+    if (localStorage.getItem('collapsed:' + sec.id) === '1') sec.classList.add('collapsed');
+  } catch {}
+});
+
+// ========== Export snapshot ==========
+async function exportSnapshot() {
+  const clone = document.documentElement.cloneNode(true);
+
+  // Remove original scripts
+  clone.querySelectorAll('script').forEach(s => s.remove());
+  // Remove setup screen
+  const setup = clone.querySelector('.setup');
+  if (setup) setup.remove();
+  // Remove settings overlay
+  const settingsOv = clone.querySelector('#settingsOverlay');
+  if (settingsOv) settingsOv.remove();
+  // Remove controls (refresh, export, toggle — won't work standalone)
+  const controls = clone.querySelector('.controls');
+  if (controls) controls.remove();
+  // Remove toast
+  const toast = clone.querySelector('#toast');
+  if (toast) toast.remove();
+  // Remove lightbox (no embedded images in snapshot)
+  const lightbox = clone.querySelector('#lightbox');
+  if (lightbox) lightbox.remove();
+  // Remove tooltip image/hint elements (keep text-only tooltips)
+  const tipImgs = clone.querySelector('.tip-imgs');
+  if (tipImgs) tipImgs.remove();
+  const tipHint = clone.querySelector('.tip-hint');
+  if (tipHint) tipHint.remove();
+
+  // Make main visible
+  const main = clone.querySelector('#main');
+  if (main) main.style.display = '';
+
+  // Change "Atualizado" to "Exportado" in lastUpdate
+  const lu = clone.querySelector('#lastUpdate');
+  if (lu) lu.textContent = lu.textContent.replace(/Atualizado/i, 'Exportado');
+
+  // Remove footer update message, keep author credit
+  const footer = clone.querySelector('footer');
+  if (footer) {
+    const credit = footer.querySelector('div');
+    if (credit) footer.innerHTML = credit.outerHTML;
+    else footer.innerHTML = '';
+  }
+
+  // Build trainingsByDay data for snapshot (dateStr -> [{official}])
+  const snapshotData = {};
+  for (const [ds, tList] of trainingsByDay) {
+    snapshotData[ds] = tList.map(t => ({
+      official: t.official,
+    }));
+  }
+
+  // Inject self-contained JS for interactions
+  const script = document.createElement('script');
+  script.textContent = `
+(function() {
+  var $ = function(id) { return document.getElementById(id); };
+  var DOW_NAMES = ${JSON.stringify(DOW_NAMES)};
+  var snapshotData = ${JSON.stringify(snapshotData)};
+
+  function fmtDate(d) {
+    if (typeof d === 'string') d = new Date(d + 'T00:00:00');
+    return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' });
+  }
+
+  // Tooltip (text only — no images in snapshot)
+  var tip = $('tooltip');
+  if (tip) {
+    var tipText = tip.querySelector('.tip-text');
+
+    function positionTooltip(el) {
+      var r = el.getBoundingClientRect();
+      var tipRect = tip.getBoundingClientRect();
+      var left = r.left + r.width/2 + window.scrollX;
+      var top = r.top + window.scrollY - tipRect.height - 10;
+      if (top < window.scrollY + 8) top = r.bottom + window.scrollY + 10;
+      var halfW = tipRect.width / 2;
+      var minLeft = window.scrollX + halfW + 8;
+      var maxLeft = window.scrollX + document.documentElement.clientWidth - halfW - 8;
+      left = Math.max(minLeft, Math.min(maxLeft, left));
+      tip.style.left = left + 'px';
+      tip.style.top = top + 'px';
+    }
+
+    document.addEventListener('mouseover', function(e) {
+      var cell = e.target.closest('.heatmap-cell');
+      if (cell && cell.dataset.dateStr) {
+        var ds = cell.dataset.dateStr;
+        var dow = DOW_NAMES[new Date(ds + 'T00:00:00').getDay()];
+        var day = snapshotData[ds] || [];
+        if (!day.length) {
+          tipText.textContent = dow + ', ' + fmtDate(ds) + ' — sem treino';
+        } else {
+          var n = day.length;
+          var off = day.filter(function(t){return t.official}).length;
+          var unof = n - off;
+          var label = dow + ', ' + fmtDate(ds) + ' — ' + n + (n===1?' treino':' treinos');
+          if (unof && !off) label += ' (não oficial)';
+          else if (unof) label += ' (' + unof + ' não oficial)';
+          tipText.textContent = label;
+        }
+        tip.classList.add('show');
+        positionTooltip(cell);
+        return;
+      }
+      var el = e.target.closest('[data-tip]');
+      if (el) {
+        tipText.textContent = el.dataset.tip;
+        tip.classList.add('show');
+        positionTooltip(el);
+      }
+    });
+    document.addEventListener('mouseout', function(e) {
+      if (e.target.closest('.heatmap-cell') || e.target.closest('[data-tip]')) {
+        tip.classList.remove('show');
+      }
+    });
+  }
+
+  // Collapsible (Marcos)
+  document.addEventListener('click', function(e) {
+    var header = e.target.closest('.collapsible-header');
+    if (!header) return;
+    var section = header.closest('.collapsible');
+    if (section) section.classList.toggle('collapsed');
+  });
+})();
+`;
+  clone.querySelector('body').appendChild(script);
+
+  // Build the full HTML
+  const html = '<!DOCTYPE html>\n<html lang="pt-BR">\n' + clone.innerHTML + '\n</html>';
+  const blob = new Blob([html], { type: 'text/html' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const today = new Date().toISOString().slice(0, 10);
+  a.href = url;
+  a.download = `jiu-jitsu-report-${today}.html`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('Snapshot exportado!');
+}
+
+// ========== Init ==========
+(async () => {
+  setupGlobalHandlers();
+  // Try to restore folder
+  const saved = await loadHandle();
+  if (saved) {
+    dirHandle = saved;
+    // Need user gesture for permission grant — try silent first
+    if ((await dirHandle.queryPermission({ mode: 'read' })) === 'granted') {
+      await activate();
+    } else {
+      // Show setup with hint that we have a saved folder
+      $('setupBtn').textContent = 'Continuar com a pasta anterior';
+    }
+  }
+})();
+</script>
+</body>
+</html>
