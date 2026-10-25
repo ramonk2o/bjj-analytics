@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { toDateStr } from './dates';
+import { addDays, toDateStr } from './dates';
+import { fmtMonthYear } from './format';
 import { computeBeltTrajectory, computeGraduation } from './graduation';
 import { defaultSettings } from './settings';
 import { daily, trainings } from './test-helpers';
@@ -56,7 +57,8 @@ describe('computeGraduation', () => {
 
 describe('computeBeltTrajectory', () => {
   const list = trainings(...daily('2024-01-01', 150), ...daily('2024-06-01', 10, '01-azul'));
-  const cards = computeBeltTrajectory(list, '01-azul', { ...settings, weeklyAvgPeriod: 'all' }, NOW);
+  // ritmo = média semanal do período (oficiais), a mesma das outras ETAs
+  const cards = computeBeltTrajectory(list, '01-azul', 5, settings, NOW);
   const labels = (i: number) => cards[i]!.info.map(b => b.label);
 
   it('counts official classes per belt', () => {
@@ -70,10 +72,17 @@ describe('computeBeltTrajectory', () => {
     expect(labels(1)).toEqual(['Na faixa', 'Chegada', 'Jiu-jitsu total']);
   });
 
-  it('projects future belts from the weekly pace', () => {
+  it('projects future belts from the weekly average of the period', () => {
     expect(labels(2)).toEqual(['Na faixa (est.)', 'Chegada estimada', 'Jiu-jitsu total (est.)']);
-    // 160 aulas em 162 dias ≈ 6,9/sem; roxa pede 375 aulas ≈ 380 dias
-    expect(cards[2]!.info[0]!.value).toBe('~1a');
+    // roxa pede 375 aulas: a 5/sem, 75 semanas = 525 dias
+    expect(cards[2]!.info[0]!.value).toBe('~1a 5m');
+    // faltam 315 aulas na azul: 63 semanas até chegar na roxa
+    expect(cards[2]!.info[1]!.value).toBe(fmtMonthYear(addDays(NOW, 63 * 7)));
     expect(cards[4]!.info[0]).toEqual({ label: 'Na faixa', value: 'o caminho de uma vida' });
+  });
+
+  it('without a weekly average there is no projection', () => {
+    const none = computeBeltTrajectory(list, '01-azul', 0, settings, NOW);
+    expect(none[2]!.info).toEqual([{ label: '', value: '—' }]);
   });
 });

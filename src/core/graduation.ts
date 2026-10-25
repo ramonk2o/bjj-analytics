@@ -1,7 +1,7 @@
 import { BELTS } from './belts';
 import { DAY_MS, addDays, daysAgo, startOfDay } from './dates';
 import { fmtMonthYear, fmtSpan } from './format';
-import { periodStartTime, type Settings } from './settings';
+import type { Settings } from './settings';
 import type { Belt, Training } from './types';
 
 export interface GradeProgress {
@@ -111,24 +111,15 @@ export interface BeltCard {
 }
 
 // Trajetória nas faixas: aulas oficiais por faixa, tempo nas passadas e projeção
-// das futuras pelo ritmo semanal do período configurado.
+// das futuras pela média semanal do período (a mesma das ETAs de graduação).
 export function computeBeltTrajectory(
   trainings: Training[],
   currentBeltId: string,
+  weeklyAvg: number,
   settings: Settings,
   now: Date,
 ): BeltCard[] {
   const allOfficialFull = trainings.filter(t => t.official);
-  const pStart = periodStartTime(settings.weeklyAvgPeriod, now);
-  const allOfficial = pStart !== null
-    ? allOfficialFull.filter(t => t.date.getTime() >= pStart)
-    : allOfficialFull;
-  let currentWeeklyRate = 0;
-  if (allOfficial.length >= 2) {
-    const firstDate = allOfficial[0]!.date, lastDate = allOfficial[allOfficial.length - 1]!.date;
-    const totalDays = Math.max(1, Math.round((lastDate.getTime() - firstDate.getTime()) / DAY_MS) + 1);
-    currentWeeklyRate = allOfficial.length / (totalDays / 7);
-  }
   const currentBeltIdx = BELTS.findIndex(b => b.id === currentBeltId);
   // veryFirstDate olha todo o histórico (afeta "Jiu-jitsu total")
   const veryFirstDate = allOfficialFull[0]?.date ?? null;
@@ -157,7 +148,7 @@ export function computeBeltTrajectory(
         info.push({ label: 'Jiu-jitsu total', value: fmtSpan(Math.max(1, daysAgo(veryFirstDate, now))) });
       }
       const remaining = Math.max(0, currentNeeded - n);
-      futureWeeksAccum = currentWeeklyRate > 0 && remaining > 0 ? remaining / currentWeeklyRate : 0;
+      futureWeeksAccum = weeklyAvg > 0 && remaining > 0 ? remaining / weeklyAvg : 0;
     } else if (n > 0 && first && last && beltIdx <= currentBeltIdx) {
       // Faixa passada
       const span = Math.max(1, Math.round((last.getTime() - first.getTime()) / DAY_MS) + 1);
@@ -171,22 +162,22 @@ export function computeBeltTrajectory(
       // Faixa futura
       if (belt.class === 'preta') {
         const prevEffective = Math.max(0, aulasToPromote(BELTS[beltIdx - 1]) - currentExcess);
-        if (currentWeeklyRate > 0 && prevEffective > 0) futureWeeksAccum += prevEffective / currentWeeklyRate;
+        if (weeklyAvg > 0 && prevEffective > 0) futureWeeksAccum += prevEffective / weeklyAvg;
         info.push({ label: 'Na faixa', value: 'o caminho de uma vida' });
-        if (veryFirstDate && currentWeeklyRate > 0) {
+        if (veryFirstDate && weeklyAvg > 0) {
           info.push({ label: 'Chegada estimada', value: fmtMonthYear(etaFromNow()) });
           info.push({ label: 'Jiu-jitsu total (est.)', value: `~${fmtSpan(totalDaysToReach())}` });
         }
-      } else if (currentWeeklyRate > 0) {
+      } else if (weeklyAvg > 0) {
         const prevBelt = BELTS[beltIdx - 1];
         if (!(prevBelt && prevBelt.id === currentBeltId)) {
           const discount = beltIdx === currentBeltIdx + 2 ? currentExcess : 0;
           const prevEffective = Math.max(0, aulasToPromote(prevBelt) - discount);
-          if (prevEffective > 0) futureWeeksAccum += prevEffective / currentWeeklyRate;
+          if (prevEffective > 0) futureWeeksAccum += prevEffective / weeklyAvg;
         }
         const aulasInBelt = aulasToPromote(belt);
         if (aulasInBelt > 0) {
-          info.push({ label: 'Na faixa (est.)', value: `~${fmtSpan(Math.round((aulasInBelt / currentWeeklyRate) * 7))}` });
+          info.push({ label: 'Na faixa (est.)', value: `~${fmtSpan(Math.round((aulasInBelt / weeklyAvg) * 7))}` });
         }
         info.push({ label: 'Chegada estimada', value: fmtMonthYear(etaFromNow()) });
         if (veryFirstDate) {

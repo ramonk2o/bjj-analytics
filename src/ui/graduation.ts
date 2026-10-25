@@ -17,8 +17,8 @@ function fmtDur(weeks: number | null): string {
   return `~${(months / 12).toFixed(1)} anos`;
 }
 
-function beltTrajectoryHtml(currentBeltId: string, ctx: RenderContext): string {
-  const cards = computeBeltTrajectory(ctx.effective, currentBeltId, ctx.settings, ctx.now).map(({ belt, n, isCurrent, info }) => {
+function beltTrajectoryHtml(currentBeltId: string, weeklyAvg: number, ctx: RenderContext): string {
+  const cards = computeBeltTrajectory(ctx.effective, currentBeltId, weeklyAvg, ctx.settings, ctx.now).map(({ belt, n, isCurrent, info }) => {
     const cls = `gbc${n === 0 ? ' empty' : ''}${isCurrent ? ' current' : ''}`;
     const infoHtml = info.map(b => {
       const labelHtml = b.label ? `<div class="gbc-info-label">${b.label}</div>` : '';
@@ -41,7 +41,8 @@ function beltTrajectoryHtml(currentBeltId: string, ctx: RenderContext): string {
 export function renderGraduation(stats: Stats, ctx: RenderContext): void {
   const container = $('graduationContainer');
   $('graduationTitle').textContent = 'Evolução';
-  const g = computeGraduation(ctx.effective, parseFloat(stats.weeklyAvg) || 0, ctx.settings, ctx.now);
+  const weeklyAvg = parseFloat(stats.weeklyAvg) || 0;
+  const g = computeGraduation(ctx.effective, weeklyAvg, ctx.settings, ctx.now);
   if (!g) { container.innerHTML = ''; return; }
   const { belt, aulasPerGrau, aulasNaFaixa, progress: p } = g;
 
@@ -63,7 +64,7 @@ export function renderGraduation(stats: Stats, ctx: RenderContext): void {
       <div style="font-size:0.78rem;color:var(--text-dim)">
         Graduação na preta segue lógica diferente (tempo de faixa, não aulas). Aproveita 🥋
       </div>
-      ${beltTrajectoryHtml(belt.id, ctx)}
+      ${beltTrajectoryHtml(belt.id, weeklyAvg, ctx)}
     `;
     return;
   }
@@ -137,6 +138,6 @@ export function renderGraduation(stats: Stats, ctx: RenderContext): void {
       </div>
     </div>
 
-    ${beltTrajectoryHtml(belt.id, ctx)}
+    ${beltTrajectoryHtml(belt.id, weeklyAvg, ctx)}
   `;
 }

@@ -1,6 +1,7 @@
 import { WEEK_MS, addDays, weekStartOf } from './dates';
 import { fmtMonthYear } from './format';
-import type { Stats } from './stats';
+import type { StatsOptions } from './settings';
+import { computeStats, type Stats } from './stats';
 import type { Training } from './types';
 
 export interface Badge {
@@ -108,9 +109,12 @@ function eachRun(weeks: number[], onWeek: (run: number) => void): void {
 }
 
 // `trainings` é a lista efetiva (oficiais + não oficiais); `stats` vem dos oficiais.
-export function computeMilestones(stats: Stats, trainings: Training[], now: Date): BadgeGroup[] {
+// As ETAs usam a média semanal do período: dos oficiais e, nos não oficiais, a deles.
+export function computeMilestones(stats: Stats, trainings: Training[], opts: StatsOptions): BadgeGroup[] {
+  const { now } = opts;
   const totalTrainings = stats.total;
-  const totalUnofficial = trainings.filter(t => !t.official).length;
+  const unofficial = trainings.filter(t => !t.official);
+  const totalUnofficial = unofficial.length;
 
   // Dias com >= N treinos (usando todos os treinos)
   const allPerDay = new Map<string, number>();
@@ -126,9 +130,7 @@ export function computeMilestones(stats: Stats, trainings: Training[], now: Date
   };
 
   const perWeek = parseFloat(stats.weeklyAvg) || 0;
-  const perWeekUnof = !stats.totalDays || !totalUnofficial
-    ? 0
-    : totalUnofficial / Math.max(1, stats.totalDays / 7);
+  const perWeekUnof = parseFloat(computeStats(unofficial, unofficial, opts)?.weeklyAvg ?? '') || 0;
 
   const ladder = (
     targets: number[], current: number, label: (t: number) => string,

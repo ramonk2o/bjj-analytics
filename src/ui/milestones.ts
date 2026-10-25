@@ -6,7 +6,7 @@ import { $ } from './dom';
 export function renderMilestones(stats: Stats, ctx: RenderContext): void {
   const grid = $('badgeGrid');
   grid.innerHTML = '';
-  computeMilestones(stats, ctx.effective, ctx.now).forEach(group => {
+  computeMilestones(stats, ctx.effective, ctx).forEach(group => {
     const wrap = document.createElement('div');
     wrap.className = 'badge-subsection';
     wrap.innerHTML = `<h3 class="badge-subsection-title">${group.title}</h3>`;
