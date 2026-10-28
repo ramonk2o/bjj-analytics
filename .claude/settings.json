@@ -12,5 +12,16 @@
       "Bash(git add:*)",
       "Bash(git commit:*)"
     ]
+  },
+  "extraKnownMarketplaces": {
+    "mini-devkit": {
+      "source": {
+        "source": "github",
+        "repo": "ramonk2o/mini-devkit"
+      }
+    }
+  },
+  "enabledPlugins": {
+    "mini-devkit@mini-devkit": true
   }
 }
