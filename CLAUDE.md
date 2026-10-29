@@ -25,7 +25,7 @@ A local-only web app that reads a `jiu-jitsu` photo folder (one subfolder per be
 - Stats, graduation and milestone rules are tested by calling the `src/core` functions with fixtures, explicit settings and a fixed `now`, as in `src/core/stats.test.ts`. Only what needs a real Chromium browser with a photo folder (folder picking and permission, tooltips and photo previews, lightbox, chart visuals, snapshot export) goes into "To check by hand".
 
 ## Development cycle
-Uses the `grilling`, `document` and `build` skills and the `tester` agent from the `mini-devkit` plugin. When a step needs one that isn't available, tell the user and stop; don't imitate it from memory.
+Uses the `grilling`, `document` and `build` skills and the `tester` agent from the `minidev` plugin. When a step needs one that isn't available, tell the user and stop; don't imitate it from memory.
 
 1. **Idea:** if the idea is clear, record it with `document`. If it leaves behavior open (decisions that would change what gets built), start a `grilling` interview; before its final summary, load `document` and write the summary as the backlog entry, so my OK approves the text that will be recorded. "Just note it" ("só anota", "anota aí") always skips the interview.
 2. **Build:** `build`.
