@@ -25,9 +25,6 @@ A local-only web app that reads a `jiu-jitsu` photo folder (one subfolder per be
 - Stats, graduation and milestone rules are tested by calling the `src/core` functions with fixtures, explicit settings and a fixed `now`, as in `src/core/stats.test.ts`. Only what needs a real Chromium browser with a photo folder (folder picking and permission, tooltips and photo previews, lightbox, chart visuals, snapshot export) goes into "To check by hand".
 
 ## Development cycle
-Uses the `grilling`, `document` and `build` skills and the `tester` agent from the `minidev` plugin. When a step needs one that isn't available, tell the user and stop; don't imitate it from memory.
-
-1. **Idea:** if the idea is clear, record it with `document`. If it leaves behavior open (decisions that would change what gets built), start a `grilling` interview; before its final summary, load `document` and write the summary as the backlog entry, so my OK approves the text that will be recorded. "Just note it" ("só anota", "anota aí") always skips the interview.
-2. **Build:** `build`.
-3. **Bugs:** no backlog entry or tester. Work on a `fix/<short-name>` branch created from the up-to-date main branch. If the bug can be reproduced in a test (see Tests), write the test and show it fails, then fix it. If it needs a real Chromium browser with a photo folder, put the steps to reproduce it in the commit message's `To check by hand:` block. Record it with `document` (CHANGELOG under Fixed; SPEC.md if a rule changed) and commit on the branch. Once it's confirmed fixed, merge it into the main branch, delete the branch and push. If the fix needs a decision about behavior, it's a feature: go to step 1.
-4. **Release:** cut the version with `document`. Every push to the main branch already deploys the app to GitHub Pages (`.github/workflows/pages.yml`), so the release doesn't deploy anything; to share the single file, run `npm run build` and send `dist/bjj-analytics.html`.
+This project uses the `minidev` cycle. When a step needs one of its skills and it isn't available, tell the user and stop; don't imitate it from memory.
+- Ideas: `document`. Features: `build`. Bugs: `fix`.
+- Releases: cut the version with `document`. Every push to the main branch already deploys the app to GitHub Pages (`.github/workflows/pages.yml`), so the release doesn't deploy anything; to share the single file, run `npm run build` and send `dist/bjj-analytics.html`.
