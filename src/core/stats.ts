@@ -239,9 +239,9 @@ export function computeStats(list: Training[], allList: Training[] | null, opts:
     if (!mostActiveWeek || v.count > mostActiveWeek.count) mostActiveWeek = { key: k, count: v.count, start: v.start };
   });
 
-  // Dias com múltiplos treinos
+  // Dias com múltiplos treinos: contam todos os treinos, oficiais e não oficiais
   const trainingsPerDay = new Map<string, number>();
-  list.forEach(t => trainingsPerDay.set(t.dateStr, (trainingsPerDay.get(t.dateStr) || 0) + 1));
+  allList.forEach(t => trainingsPerDay.set(t.dateStr, (trainingsPerDay.get(t.dateStr) || 0) + 1));
   const dayDistribution = new Map<number, number>();
   let recordDayCount = 0;
   let recordDayDate: string | null = null;

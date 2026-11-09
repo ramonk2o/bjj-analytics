@@ -5,6 +5,7 @@ Todas as mudanças relevantes deste projeto ficam registradas aqui. O formato se
 ## [Unreleased]
 
 ### Changed
+- **Dias com múltiplos treinos**, na análise detalhada, contam também os treinos não oficiais, como os badges de 2 e 3 no mesmo dia: um dia com um treino oficial e um não oficial agora é um dia duplo.
 - O app virou um projeto Vite + TypeScript com testes; o build continua gerando um único `bjj-analytics.html` que abre com duplo clique, com o mesmo comportamento de antes (só estrutura do projeto, o produto não muda).
 
 ### Fixed

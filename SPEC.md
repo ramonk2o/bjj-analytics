@@ -72,7 +72,7 @@ Relatório pessoal de treinos de jiu-jitsu montado a partir de uma pasta de foto
 - **Sequências e consistência:** maior streak, streak atual, maior gap e uma linha do tempo de streaks e gaps.
 - **Taxa de presença:** dias úteis com treino oficial ÷ dias úteis do período.
 - **Dias da semana:** treinos oficiais por dia, com os não oficiais à parte e o dia mais forte em destaque.
-- **Dias com múltiplos treinos:** recorde num dia, dias com 2 ou mais e com 3 ou mais treinos, e a distribuição, contando só os treinos oficiais.
+- **Dias com múltiplos treinos:** recorde num dia, dias com 2 ou mais e com 3 ou mais treinos (de quantos dias com treino) e a distribuição, contando todos os treinos, oficiais e não oficiais, como os badges de 2 e 3 no mesmo dia.
 
 ### Fotos
 - Passar o mouse num dia do calendário mostra a data e os treinos do dia. Depois de um instante, aparecem as prévias de até 3 fotos.

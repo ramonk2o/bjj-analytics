@@ -235,6 +235,38 @@ describe('detailed analysis', () => {
   });
 });
 
+describe('days with multiple trainings', () => {
+  // as estatísticas principais: oficiais medidos, com todos os treinos ao lado
+  const stats = (...paths: string[]) => {
+    const all = trainings(...paths);
+    return computeStats(official(all), all, options(NOW))!;
+  };
+
+  it('a day with an official and an unofficial training counts as 2 trainings', () => {
+    const s = stats('00-branca/2025-10-01-a.jpg', '00-branca/2025-10-01-b_.jpg');
+    expect(Object.fromEntries(s.dayDistribution)).toEqual({ 2: 1 });
+  });
+
+  it('the record day counts unofficial trainings', () => {
+    const s = stats('00-branca/2025-09-24-a.jpg', '00-branca/2025-09-24-b.jpg',
+      '00-branca/2025-10-01-a.jpg', '00-branca/2025-10-01-b_.jpg', '00-branca/2025-10-01-c_.jpg');
+    expect(s.recordDayCount).toBe(3);
+    expect(s.recordDayDate).toBe('2025-10-01');
+  });
+
+  it('the distribution counts every day with a training, official or not', () => {
+    // 01/10 só oficial, 02/10 só não oficial, 03/10 com dois não oficiais
+    const s = stats('00-branca/2025-10-01.jpg', '00-branca/2025-10-02_.jpg', '00-branca/2025-10-03-a_.jpg', '00-branca/2025-10-03-b_.jpg');
+    expect(Object.fromEntries(s.dayDistribution)).toEqual({ 1: 2, 2: 1 });
+  });
+
+  it('leaves out unofficial trainings of the current week when the toggle is off', () => {
+    const s = stats('00-branca/2025-10-08.jpg', '00-branca/2025-10-14-a_.jpg', '00-branca/2025-10-14-b_.jpg');
+    expect(Object.fromEntries(s.dayDistribution)).toEqual({ 1: 1 });
+    expect(s.recordDayCount).toBe(1);
+  });
+});
+
 describe('days', () => {
   it('tracks multi-training days and days since the last training', () => {
     const list = trainings('00-branca/2025-10-01-a.jpg', '00-branca/2025-10-01-b_.jpg', '00-branca/2025-10-08.jpg');

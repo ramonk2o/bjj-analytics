@@ -5,6 +5,7 @@ import { $, miniStat } from './dom';
 export function renderMultiDays(stats: Stats): void {
   const daysWithAtLeast = (min: number) =>
     [...stats.dayDistribution].filter(([n]) => n >= min).reduce((s, [, c]) => s + c, 0);
+  const trainedDays = daysWithAtLeast(1);
   const multiDays = daysWithAtLeast(2);
   const tripleDays = daysWithAtLeast(3);
 
@@ -16,7 +17,7 @@ export function renderMultiDays(stats: Stats): void {
       extra: stats.recordDayDate ? fmtDate(stats.recordDayDate) : '',
       accent: true,
     }),
-    miniStat({ label: 'Dias duplos+', value: multiDays, extra: `de ${stats.uniqueDays} dias` }),
+    miniStat({ label: 'Dias duplos+', value: multiDays, extra: `de ${trainedDays} dias` }),
     miniStat({ label: 'Dias triplos+', value: tripleDays, extra: tripleDays === 0 ? 'ainda nenhum' : 'ou mais' }),
   ].join('');
 
