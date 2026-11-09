@@ -22,6 +22,36 @@ export function defaultSettings(): Settings {
   };
 }
 
+// Valores do formulário de configurações, como o usuário digitou.
+export interface SettingsForm {
+  branca: string;
+  azul: string;
+  roxa: string;
+  marrom: string;
+  streakMin: string;
+  grauOverride: string;
+  weeklyAvgPeriod: string;
+}
+
+// Configurações a salvar a partir do formulário: aulas por grau vazio ou 0 volta ao
+// padrão, o mínimo por semana fica entre 1 e 7 e um período desconhecido vira 3 meses.
+export function settingsFromForm(form: SettingsForm, previous: Settings): Settings {
+  const aulas = (value: string, fallback: number) => parseInt(value) || fallback;
+  const period = form.weeklyAvgPeriod as AvgPeriod;
+  return {
+    beltRules: {
+      ...previous.beltRules,
+      branca: aulas(form.branca, BELT_RULES_DEFAULTS.branca),
+      azul: aulas(form.azul, BELT_RULES_DEFAULTS.azul),
+      roxa: aulas(form.roxa, BELT_RULES_DEFAULTS.roxa),
+      marrom: aulas(form.marrom, BELT_RULES_DEFAULTS.marrom),
+    },
+    streakMin: Math.max(1, Math.min(7, parseInt(form.streakMin) || 2)),
+    grauOverride: form.grauOverride as GrauOverride,
+    weeklyAvgPeriod: AVG_PERIODS.includes(period) ? period : '3m',
+  };
+}
+
 // Everything a stats function needs besides the trainings.
 export interface StatsOptions {
   settings: Settings;

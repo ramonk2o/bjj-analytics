@@ -1,5 +1,4 @@
-import { BELT_RULES_DEFAULTS } from '../core/belts';
-import { AVG_PERIODS, type AvgPeriod, type GrauOverride, type Settings } from '../core/settings';
+import { settingsFromForm } from '../core/settings';
 import { saveSettings } from '../data/settings-store';
 import { state } from '../state';
 import { $, showToast } from './dom';
@@ -26,20 +25,15 @@ export function setupSettingsPanel(onChange: () => void): void {
   }
 
   function save() {
-    const aulas = (id: string, fallback: number) => parseInt(input(id).value) || fallback;
-    const period = input('cfgAvgPeriod').value as AvgPeriod;
-    const next: Settings = {
-      beltRules: {
-        ...state.settings.beltRules,
-        branca: aulas('cfgBranca', BELT_RULES_DEFAULTS.branca),
-        azul: aulas('cfgAzul', BELT_RULES_DEFAULTS.azul),
-        roxa: aulas('cfgRoxa', BELT_RULES_DEFAULTS.roxa),
-        marrom: aulas('cfgMarrom', BELT_RULES_DEFAULTS.marrom),
-      },
-      streakMin: Math.max(1, Math.min(7, parseInt(input('cfgStreakMin').value) || 2)),
-      grauOverride: input('cfgGrauOverride').value as GrauOverride,
-      weeklyAvgPeriod: AVG_PERIODS.includes(period) ? period : '3m',
-    };
+    const next = settingsFromForm({
+      branca: input('cfgBranca').value,
+      azul: input('cfgAzul').value,
+      roxa: input('cfgRoxa').value,
+      marrom: input('cfgMarrom').value,
+      streakMin: input('cfgStreakMin').value,
+      grauOverride: input('cfgGrauOverride').value,
+      weeklyAvgPeriod: input('cfgAvgPeriod').value,
+    }, state.settings);
     state.settings = next;
     saveSettings(next);
     close();
