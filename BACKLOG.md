@@ -24,26 +24,6 @@ Status: **Ideia** → **Em andamento** (cada uma no seu branch) → pronta (sai 
   - a data estimada do próximo marco, pela média semanal do período;
   - sem streak ativo, o card mostra há quantas semanas não se atinge o mínimo (o texto é montado na interface, fora de `src/core`).
 
-## Evolução (graduação)
-
-### Chegada estimada na preta conta aulas a mais ou a menos
-- **Status:** Ideia
-- **Tipo:** Bug
-- **Motivação:** a Trajetória mostra uma data de chegada na preta errada, que é justamente a projeção mais longa e mais olhada.
-- **Descrição:** a conta da faixa preta soma as aulas para sair da faixa anterior sem olhar se ela é a faixa atual, e desconta sempre o excedente da faixa atual.
-  - Na marrom, as aulas que faltam na marrom entram duas vezes: com média de 5/semana e poucas aulas na faixa, a chegada sai cerca de 85 semanas depois do certo.
-  - Na branca ou azul, com aulas além do necessário na faixa atual, o excedente é descontado de novo na marrom, e a chegada sai adiantada.
-  - Para reproduzir: `computeBeltTrajectory` com a faixa atual marrom, 10 aulas nela e média 5; a chegada estimada da preta fica em ~168 semanas em vez de ~83.
-  - A versão de arquivo único tinha o mesmo erro.
-- **Decisões:**
-  - A regra do SPEC.md continua valendo: as aulas excedentes da faixa atual são descontadas só da faixa seguinte.
-
-### Faltam testes: graduação
-- **Status:** Ideia
-- **Tipo:** Débito
-- **Motivação:** regras do SPEC.md sem teste podem quebrar sem ninguém perceber.
-- **Descrição:** testes para o desconto das aulas excedentes da faixa atual na faixa seguinte, e para a chegada estimada na preta (junto com a correção do bug acima).
-
 ## Treinos
 
 ### Remover a segunda curva do gráfico de treinos acumulados

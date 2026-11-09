@@ -81,6 +81,24 @@ describe('computeBeltTrajectory', () => {
     expect(cards[4]!.info[0]).toEqual({ label: 'Na faixa', value: 'o caminho de uma vida' });
   });
 
+  const arrival = (c: ReturnType<typeof computeBeltTrajectory>[number]) =>
+    c.info.find(b => b.label === 'Chegada estimada')!.value;
+
+  it('at brown belt, black belt arrives when the classes left at brown are done', () => {
+    // marrom pede 425 aulas: faltam 415, a 5/sem = 83 semanas
+    const c = computeBeltTrajectory(trainings(...daily('2025-09-01', 10, '03-marrom')), '03-marrom', 5, settings, NOW);
+    expect(arrival(c[4]!)).toBe(fmtMonthYear(addDays(NOW, 83 * 7)));
+  });
+
+  it('extra classes at the current belt count only toward the next belt', () => {
+    // branca pede 150: 100 a mais, descontadas da azul (325 → 225 = 45 semanas até a roxa)
+    const c = computeBeltTrajectory(trainings(...daily('2024-01-01', 250)), '00-branca', 5, settings, NOW);
+    expect(arrival(c[2]!)).toBe(fmtMonthYear(addDays(NOW, 45 * 7)));
+    // + roxa 375 (75 sem) + marrom 425 (85 sem), sem novo desconto
+    expect(arrival(c[3]!)).toBe(fmtMonthYear(addDays(NOW, 120 * 7)));
+    expect(arrival(c[4]!)).toBe(fmtMonthYear(addDays(NOW, 205 * 7)));
+  });
+
   it('without a weekly average there is no projection', () => {
     const none = computeBeltTrajectory(list, '01-azul', 0, settings, NOW);
     expect(none[2]!.info).toEqual([{ label: '', value: '—' }]);

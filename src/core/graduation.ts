@@ -159,22 +159,21 @@ export function computeBeltTrajectory(
         info.push({ label: 'Jiu-jitsu total', value: fmtSpan(totalToArrival) });
       }
     } else if (n === 0 && beltIdx > currentBeltIdx) {
-      // Faixa futura
+      // Faixa futura: soma as aulas para sair da faixa anterior. As que faltam na
+      // faixa atual já foram somadas; o excedente dela só desconta da faixa seguinte.
+      const prevBelt = BELTS[beltIdx - 1];
+      if (weeklyAvg > 0 && !(prevBelt && prevBelt.id === currentBeltId)) {
+        const discount = beltIdx === currentBeltIdx + 2 ? currentExcess : 0;
+        const prevEffective = Math.max(0, aulasToPromote(prevBelt) - discount);
+        if (prevEffective > 0) futureWeeksAccum += prevEffective / weeklyAvg;
+      }
       if (belt.class === 'preta') {
-        const prevEffective = Math.max(0, aulasToPromote(BELTS[beltIdx - 1]) - currentExcess);
-        if (weeklyAvg > 0 && prevEffective > 0) futureWeeksAccum += prevEffective / weeklyAvg;
         info.push({ label: 'Na faixa', value: 'o caminho de uma vida' });
         if (veryFirstDate && weeklyAvg > 0) {
           info.push({ label: 'Chegada estimada', value: fmtMonthYear(etaFromNow()) });
           info.push({ label: 'Jiu-jitsu total (est.)', value: `~${fmtSpan(totalDaysToReach())}` });
         }
       } else if (weeklyAvg > 0) {
-        const prevBelt = BELTS[beltIdx - 1];
-        if (!(prevBelt && prevBelt.id === currentBeltId)) {
-          const discount = beltIdx === currentBeltIdx + 2 ? currentExcess : 0;
-          const prevEffective = Math.max(0, aulasToPromote(prevBelt) - discount);
-          if (prevEffective > 0) futureWeeksAccum += prevEffective / weeklyAvg;
-        }
         const aulasInBelt = aulasToPromote(belt);
         if (aulasInBelt > 0) {
           info.push({ label: 'Na faixa (est.)', value: `~${fmtSpan(Math.round((aulasInBelt / weeklyAvg) * 7))}` });
