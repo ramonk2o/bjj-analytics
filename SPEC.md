@@ -86,7 +86,7 @@ Relatório pessoal de treinos de jiu-jitsu montado a partir de uma pasta de foto
 
 | Opção | Valores | Padrão |
 |---|---|---|
-| Aulas por grau (branca, azul, roxa, marrom) | número (o campo sugere 1 a 200); vazio ou 0 volta ao padrão | 30, 65, 75, 85 |
+| Aulas por grau (branca, azul, roxa, marrom) | número (o campo sugere 1 a 200); vazio, 0 ou negativo volta ao padrão | 30, 65, 75, 85 |
 | Período da média semanal | 3, 6, 12 meses ou todo o histórico | 3 meses |
 | Mínimo de treinos por semana para o streak | 1 a 7 | 2 |
 | Grau atual | automático ou fixo de 0 a 4 | automático |

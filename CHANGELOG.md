@@ -12,3 +12,4 @@ Todas as mudanças relevantes deste projeto ficam registradas aqui. O formato se
 - A chegada estimada das próximas faixas e a ETA dos marcos de treinos não oficiais usam a média semanal do período escolhido nas configurações, como as demais estimativas.
 - O snapshot exportado à noite não sai mais com a data do dia seguinte no nome do arquivo.
 - A chegada estimada na faixa preta, na Trajetória, não conta mais aulas a mais quando se está na marrom, nem a menos quando há aulas além do necessário na branca ou na azul.
+- Um número negativo em aulas por grau, nas configurações, volta ao padrão em vez de ser salvo e estragar as estimativas de graduação.

@@ -33,10 +33,13 @@ export interface SettingsForm {
   weeklyAvgPeriod: string;
 }
 
-// Configurações a salvar a partir do formulário: aulas por grau vazio ou 0 volta ao
-// padrão, o mínimo por semana fica entre 1 e 7 e um período desconhecido vira 3 meses.
+// Configurações a salvar a partir do formulário: aulas por grau vazio, 0 ou negativo volta
+// ao padrão, o mínimo por semana fica entre 1 e 7 e um período desconhecido vira 3 meses.
 export function settingsFromForm(form: SettingsForm, previous: Settings): Settings {
-  const aulas = (value: string, fallback: number) => parseInt(value) || fallback;
+  const aulas = (value: string, fallback: number) => {
+    const n = parseInt(value);
+    return n > 0 ? n : fallback;
+  };
   const period = form.weeklyAvgPeriod as AvgPeriod;
   return {
     beltRules: {

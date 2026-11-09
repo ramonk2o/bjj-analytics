@@ -26,6 +26,11 @@ describe('settingsFromForm', () => {
     expect(s.beltRules).toMatchObject({ branca: 30, azul: 65, roxa: 75, marrom: 85 });
   });
 
+  it('negative classes per grau go back to the default', () => {
+    const s = settingsFromForm(form({ branca: '-5', azul: '-1', roxa: '-75', marrom: '-200' }), defaultSettings());
+    expect(s.beltRules).toMatchObject({ branca: 30, azul: 65, roxa: 75, marrom: 85 });
+  });
+
   it('the weekly minimum stays between 1 and 7', () => {
     const min = (v: string) => settingsFromForm(form({ streakMin: v }), defaultSettings()).streakMin;
     expect(min('-3')).toBe(1);
