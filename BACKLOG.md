@@ -7,7 +7,7 @@ Status: **Ideia** → **Em andamento** (cada uma no seu branch) → pronta (sai 
 ## Análise detalhada
 
 ### Dias com múltiplos treinos contam todos os treinos
-- **Status:** Ideia
+- **Status:** Em andamento (feature/multiplos-todos)
 - **Motivação:** "Dias com múltiplos treinos" conta só os oficiais, enquanto os badges de 2 e 3 no mesmo dia contam todos. Um dia com um treino oficial e um não oficial vale o badge, mas não aparece como dia duplo.
 - **Descrição:** "Dias com múltiplos treinos", na análise detalhada, passa a contar os treinos oficiais e os não oficiais, como os badges de 2 e 3 no mesmo dia. O recorde no dia, os dias duplos e triplos e a distribuição seguem a mesma contagem.
 - **Decisões:**
