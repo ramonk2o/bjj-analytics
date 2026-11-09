@@ -112,6 +112,13 @@ describe('averages', () => {
     expect(s.weeklyAvg).toBe('0.6');
   });
 
+  it('the monthly average counts the days of the period, from the first day to the last', () => {
+    // 23 treinos de seg 04/08 a 26/08; período até domingo 12/10 = 70 dias → 23 / (70 / 30,4375) ≈ 10,0
+    const list = trainings(...daily('2025-08-04', 23));
+    const s = computeStats(list, list, options(NOW, { settings: { weeklyAvgPeriod: 'all' } }))!;
+    expect(s.monthlyAvg).toBe('10.0');
+  });
+
   it('a period starting before the first training counts from the first training', () => {
     // 3 meses antes de 15/10 é 15/07, antes do primeiro treino (15/09): 8 treinos em 4 semanas
     const s = computeStats(fourWeeks, fourWeeks, options(NOW, { settings: { weeklyAvgPeriod: '3m' } }))!;

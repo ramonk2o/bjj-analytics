@@ -186,7 +186,7 @@ export function computeStats(list: Training[], allList: Training[] | null, opts:
   const pStart = periodStartTime(settings.weeklyAvgPeriod, now);
   const avgFirst = pStart !== null && pStart > first.getTime() ? new Date(pStart) : first;
   const avgLast = last;
-  const avgPeriodDays = Math.max(1, Math.round((avgLast.getTime() - avgFirst.getTime()) / DAY_MS) + 1);
+  const avgPeriodDays = Math.max(1, Math.round((startOfDay(avgLast).getTime() - avgFirst.getTime()) / DAY_MS) + 1);
   const totalWeeks = Math.max(1, (avgLast.getTime() - avgFirst.getTime()) / WEEK_MS);
   const totalMonths = Math.max(1, avgPeriodDays / 30.4375);
   const avgPeriodList = list.filter(t =>
