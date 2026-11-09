@@ -4,6 +4,10 @@ Todas as mudanças relevantes deste projeto ficam registradas aqui. O formato se
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-11-09
+
+Primeira versão marcada: o app em Vite + TypeScript, com testes, e correções nas estimativas e médias.
+
 ### Changed
 - **Dias com múltiplos treinos**, na análise detalhada, contam também os treinos não oficiais, como os badges de 2 e 3 no mesmo dia: um dia com um treino oficial e um não oficial agora é um dia duplo.
 - O app virou um projeto Vite + TypeScript com testes; o build continua gerando um único `bjj-analytics.html` que abre com duplo clique, com o mesmo comportamento de antes (só estrutura do projeto, o produto não muda).
@@ -16,3 +20,6 @@ Todas as mudanças relevantes deste projeto ficam registradas aqui. O formato se
 - Um número negativo em aulas por grau, nas configurações, volta ao padrão em vez de estragar as estimativas de graduação, inclusive quando já estava salvo de antes.
 - A taxa de presença não conta mais um dia útil a mais no período (a segunda-feira desta semana, ou amanhã com a semana atual incluída), que deixava a taxa menor do que a real.
 - A média mensal também não conta mais um dia a mais no período, o que a deixava um pouco abaixo da real.
+
+[Unreleased]: https://github.com/ramonk2o/bjj-analytics/compare/1.0.0...HEAD
+[1.0.0]: https://github.com/ramonk2o/bjj-analytics/tree/1.0.0

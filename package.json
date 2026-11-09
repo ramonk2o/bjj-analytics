@@ -1,6 +1,6 @@
 {
   "name": "bjj-analytics",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "private": true,
   "description": "Local-only training analytics for a jiu-jitsu photo folder",
   "type": "module",
