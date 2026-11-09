@@ -3,21 +3,19 @@ import type { Stats } from '../core/stats';
 import type { RenderContext } from '../state';
 import { $ } from './dom';
 
-// Treinos acumulados (oficiais por cima, todos por baixo) com projeção até o próximo marco.
+// Treinos acumulados do filtro da seção, com projeção até o próximo marco.
 export function renderCumulativeChart(stats: Stats, ctx: RenderContext): void {
   const svg = $<SVGSVGElement>('cumulativeChart');
   svg.innerHTML = '';
   const cum = stats.cumulative;
-  const cumAll = stats.cumulativeAll.length ? stats.cumulativeAll : cum;
   const lastCum = cum[cum.length - 1];
-  const lastAll = cumAll[cumAll.length - 1];
-  if (!lastCum || !lastAll) return;
+  if (!lastCum) return;
   const nowMs = ctx.now.getTime();
 
   const W = 600, H = 240;
   const pad = { top: 16, right: 16, bottom: 36, left: 40 };
-  const minDate = Math.min(cum[0]!.date.getTime(), cumAll[0]!.date.getTime());
-  const maxTotal = Math.max(lastCum.total, lastAll.total);
+  const minDate = cum[0]!.date.getTime();
+  const maxTotal = lastCum.total;
   // Inclui o próximo marco na escala Y pra projeção caber
   const milestone50 = (Math.floor(lastCum.total / 50) + 1) * 50;
   const niceMax = Math.ceil(Math.max(maxTotal, milestone50) / 50) * 50 || 50;
@@ -27,7 +25,7 @@ export function renderCumulativeChart(stats: Stats, ctx: RenderContext): void {
   const projEtaMs = projMonthly > 0 && projRemaining > 0
     ? nowMs + (projRemaining / projMonthly) * 30.4375 * 86400000
     : nowMs;
-  const maxDate = Math.max(lastCum.date.getTime(), lastAll.date.getTime(), nowMs, projEtaMs);
+  const maxDate = Math.max(lastCum.date.getTime(), nowMs, projEtaMs);
 
   const xFor = (t: number) => pad.left + ((t - minDate) / (maxDate - minDate)) * (W - pad.left - pad.right);
   const yFor = (v: number) => pad.top + (1 - v / niceMax) * (H - pad.top - pad.bottom);
@@ -47,15 +45,7 @@ export function renderCumulativeChart(stats: Stats, ctx: RenderContext): void {
        <text class="cum-axis" x="${pad.left - 6}" y="${y + 3}" text-anchor="end">${v}</text>`);
   }
 
-  // Linha "todos" (oficial + não oficial), desenhada por baixo
-  if (lastAll.total > lastCum.total) {
-    let allD = `M ${xFor(cumAll[0]!.date.getTime())} ${yFor(cumAll[0]!.total)}`;
-    cumAll.slice(1).forEach(p => { allD += ` L ${xFor(p.date.getTime())} ${yFor(p.total)}`; });
-    allD += ` L ${xFor(Math.max(lastAll.date.getTime(), nowMs))} ${yFor(lastAll.total)}`;
-    svg.insertAdjacentHTML('beforeend', `<path class="cum-line-all" d="${allD}" />`);
-  }
-
-  // Área e linha dos oficiais, estendida até hoje na altura do último ponto
+  // Área e linha, estendida até hoje na altura do último ponto
   let pathD = `M ${xFor(cum[0]!.date.getTime())} ${yFor(cum[0]!.total)}`;
   cum.slice(1).forEach(p => { pathD += ` L ${xFor(p.date.getTime())} ${yFor(p.total)}`; });
   const todayX = xFor(Math.max(lastCum.date.getTime(), nowMs));

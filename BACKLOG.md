@@ -26,12 +26,6 @@ Status: **Ideia** → **Em andamento** (cada uma no seu branch) → pronta (sai 
 
 ## Treinos
 
-### Remover a segunda curva do gráfico de treinos acumulados
-- **Status:** Ideia
-- **Tipo:** Débito
-- **Motivação:** o gráfico tem código para desenhar uma curva de "todos" por baixo da principal, mas como ele segue o filtro da seção, as duas curvas são sempre iguais e a segunda nunca aparece. É código morto que confunde quem lê.
-- **Descrição:** tirar a série acumulada de "todos" dos stats e a linha correspondente do gráfico, sem mudar o que aparece na tela.
-
 ### Faltam testes: treinos
 - **Status:** Ideia
 - **Tipo:** Débito

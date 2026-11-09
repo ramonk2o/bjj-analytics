@@ -57,7 +57,6 @@ export interface Stats {
   unofficialCount: number;
   mixedDays: number;
   cumulative: CumulativePoint[];
-  cumulativeAll: CumulativePoint[];
   // Marco e atividade recente
   nextMilestoneTotal: number;
   nextMilestoneRemaining: number;
@@ -260,13 +259,10 @@ export function computeStats(list: Training[], allList: Training[] | null, opts:
   let mixedDays = 0;
   dayOfficialFlag.forEach(v => { if (v.o && v.u) mixedDays++; });
 
-  // Séries acumuladas
-  const cumulativeOf = (arr: Training[]): CumulativePoint[] =>
-    arr.slice()
-      .sort((a, b) => a.date.getTime() - b.date.getTime())
-      .map((t, i) => ({ dateStr: t.dateStr, date: t.date, total: i + 1 }));
-  const cumulative = cumulativeOf(list);
-  const cumulativeAll = cumulativeOf(allList);
+  // Série acumulada
+  const cumulative: CumulativePoint[] = list.slice()
+    .sort((a, b) => a.date.getTime() - b.date.getTime())
+    .map((t, i) => ({ dateStr: t.dateStr, date: t.date, total: i + 1 }));
 
   // ===== Próximo marco de 50 treinos =====
   const nextMilestoneTotal = (Math.floor(list.length / NEXT_MILESTONE_STEP) + 1) * NEXT_MILESTONE_STEP;
@@ -353,7 +349,6 @@ export function computeStats(list: Training[], allList: Training[] | null, opts:
     officialCount, unofficialCount,
     mixedDays,
     cumulative,
-    cumulativeAll,
     nextMilestoneTotal, nextMilestoneRemaining, nextMilestoneEta,
     recentActivity: {
       weeks: recentWeeks,
