@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { defaultSettings, settingsFromForm, type SettingsForm } from './settings';
+import { defaultSettings, settingsFromForm, settingsFromSaved, type SettingsForm } from './settings';
 
 const form = (over: Partial<SettingsForm> = {}): SettingsForm => ({
   branca: '40', azul: '70', roxa: '80', marrom: '90',
@@ -40,5 +40,12 @@ describe('settingsFromForm', () => {
 
   it('an unknown period goes back to 3 months', () => {
     expect(settingsFromForm(form({ weeklyAvgPeriod: '24m' }), defaultSettings()).weeklyAvgPeriod).toBe('3m');
+  });
+});
+
+describe('settingsFromSaved', () => {
+  it('non-positive classes per grau saved before go back to the default', () => {
+    const s = settingsFromSaved({ beltRules: { branca: -5, azul: 70, roxa: 0, marrom: -1, preta: 0 } });
+    expect(s.beltRules).toMatchObject({ branca: 30, azul: 70, roxa: 75, marrom: 85 });
   });
 });

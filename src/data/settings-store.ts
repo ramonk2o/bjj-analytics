@@ -1,4 +1,4 @@
-import { defaultSettings, type Settings } from '../core/settings';
+import { defaultSettings, settingsFromSaved, type Settings } from '../core/settings';
 
 // localStorage keys are kept from the single-file version so saved preferences survive.
 const SETTINGS_KEY = 'jja-settings';
@@ -6,21 +6,11 @@ const INCLUDE_CURRENT_WEEK_KEY = 'includeCurrentWeek';
 const COLLAPSED_PREFIX = 'collapsed:';
 
 export function loadSettings(): Settings {
-  const s = defaultSettings();
   try {
     const saved = localStorage.getItem(SETTINGS_KEY);
-    if (!saved) return s;
-    const cfg = JSON.parse(saved) as Partial<Settings>;
-    if (cfg.beltRules) {
-      for (const k of Object.keys(cfg.beltRules) as (keyof Settings['beltRules'])[]) {
-        if (k in s.beltRules) s.beltRules[k] = cfg.beltRules[k];
-      }
-    }
-    if (cfg.streakMin) s.streakMin = cfg.streakMin;
-    if (cfg.grauOverride !== undefined) s.grauOverride = cfg.grauOverride;
-    if (cfg.weeklyAvgPeriod) s.weeklyAvgPeriod = cfg.weeklyAvgPeriod;
+    if (saved) return settingsFromSaved(JSON.parse(saved) as Partial<Settings>);
   } catch {}
-  return s;
+  return defaultSettings();
 }
 
 export function saveSettings(s: Settings): void {

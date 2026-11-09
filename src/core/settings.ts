@@ -22,6 +22,22 @@ export function defaultSettings(): Settings {
   };
 }
 
+// Configurações carregadas do que foi salvo, sobre os padrões. Aulas por grau que não
+// sejam um número positivo (salvas antes da validação) ficam no padrão.
+export function settingsFromSaved(cfg: Partial<Settings>): Settings {
+  const s = defaultSettings();
+  if (cfg.beltRules) {
+    for (const k of Object.keys(cfg.beltRules) as BeltClass[]) {
+      const v = cfg.beltRules[k];
+      if (k in s.beltRules && typeof v === 'number' && v > 0) s.beltRules[k] = v;
+    }
+  }
+  if (cfg.streakMin) s.streakMin = cfg.streakMin;
+  if (cfg.grauOverride !== undefined) s.grauOverride = cfg.grauOverride;
+  if (cfg.weeklyAvgPeriod) s.weeklyAvgPeriod = cfg.weeklyAvgPeriod;
+  return s;
+}
+
 // Valores do formulário de configurações, como o usuário digitou.
 export interface SettingsForm {
   branca: string;
