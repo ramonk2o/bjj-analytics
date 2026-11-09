@@ -1,7 +1,7 @@
 # BJJ Analytics
 
 A local-only web app that reads a `jiu-jitsu` photo folder (one subfolder per belt) through the File System Access API and shows training analytics: streaks, averages, heatmap, graduation progress and milestones.
-- How it works today: `SPEC.md`. Ideas and the feature in progress: `BACKLOG.md`. What changed in each version: `CHANGELOG.md`.
+- How it works today: `SPEC.md`. Ideas, the features in progress and bugs or debt left for later: `BACKLOG.md`. What changed in each version: `CHANGELOG.md`.
 
 ## Commands
 - Install: `npm install`
@@ -26,5 +26,7 @@ A local-only web app that reads a `jiu-jitsu` photo folder (one subfolder per be
 
 ## Development cycle
 This project uses the `minidev` cycle. When a step needs one of its skills and it isn't available, tell the user and stop; don't imitate it from memory.
-- Ideas: `document`. Features: `build`. Bugs: `fix`.
+- Ideas: `document`. Features: `build`. Bugs: `fix`. Refactoring, upgrades and other changes that keep the behavior: `chore`.
+- Integration: local merge.
+- Documents: Brazilian Portuguese.
 - Releases: cut the version with `document`. Every push to the main branch already deploys the app to GitHub Pages (`.github/workflows/pages.yml`), so the release doesn't deploy anything; to share the single file, run `npm run build` and send `dist/bjj-analytics.html`.

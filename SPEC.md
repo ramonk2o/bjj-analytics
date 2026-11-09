@@ -1,6 +1,6 @@
 # Jiu-Jitsu Analytics
 
-Como o Jiu-Jitsu Analytics funciona hoje, em regras (não detalhes visuais), mais seus dados e decisões técnicas. Gerenciado com o skill `document`: é atualizado quando uma funcionalidade termina, descrevendo o que foi construído. Ideias ficam no BACKLOG.md; o que mudou e quando fica no CHANGELOG.md.
+Como o Jiu-Jitsu Analytics funciona hoje, em regras (não detalhes visuais), mais seus dados e decisões técnicas. Gerenciado com o skill `document`: é atualizado quando uma funcionalidade, correção ou chore muda o que ele descreve, a partir do que foi construído. Ideias ficam no BACKLOG.md; o que mudou e quando fica no CHANGELOG.md.
 
 ## Objetivo
 
@@ -16,6 +16,7 @@ Relatório pessoal de treinos de jiu-jitsu montado a partir de uma pasta de foto
 - Um treino é único por faixa, data, sufixo e oficial/não oficial. O mesmo treino em formatos diferentes conta uma vez só.
 - A pasta escolhida é lembrada. Ao abrir o app, se o navegador ainda dá permissão de leitura, o relatório carrega direto. Se não, o botão vira "Continuar com a pasta anterior" e pede a permissão no clique.
 - "Atualizar" lê as pastas de novo e redesenha tudo.
+- Sem nenhum treino oficial (pasta vazia ou só com não oficiais), o relatório mostra "Nenhum treino encontrado nas pastas das faixas".
 
 ## Comportamento
 
@@ -56,14 +57,14 @@ Relatório pessoal de treinos de jiu-jitsu montado a partir de uma pasta de foto
 - **Volume e frequência:** total, dias diferentes, médias semanal e mensal, dia da semana mais forte, mês mais ativo e semana mais ativa.
 - **Atividade:** treinos por semana, do primeiro treino à semana de referência, com a linha da média semanal do período.
   - A tendência compara as últimas 12 semanas: "subindo" ou "caindo" quando a variação passa de 1 treino ou de 25% da média dessas semanas (o que for maior); se não, "estável".
-- **Treinos acumulados:** curva dos oficiais e, por baixo, a de todos. Tem marcadores a cada 25, 50 ou 100 treinos, conforme o total, e uma projeção tracejada até o próximo múltiplo de 50 pela média mensal do período.
+- **Treinos acumulados:** curva dos treinos do filtro. Tem marcadores a cada 25, 50 ou 100 treinos, conforme o total, e uma projeção tracejada até o próximo múltiplo de 50 pela média mensal do período.
 
 ### Marcos
 - Badges em quatro grupos:
   - **Treinos oficiais:** 10, 25, 50, 100… até 10.000.
   - **Treinos não oficiais:** 10 até 1.500.
   - **Maior streak**, em semanas: 2, 4, 8, 12, 16, 26, 52, 78, 104, 156.
-  - **Teste de limites:** 2 e 3 treinos no mesmo dia, e 1, 2 ou 3 semanas seguidas "cheias" (todos os dias úteis, de segunda a sexta, com treino).
+  - **Teste de limites:** 2 e 3 treinos no mesmo dia, e 1, 2 ou 3 semanas seguidas "cheias" (todos os dias úteis, de segunda a sexta, com treino). Contam todos os treinos, oficiais e não oficiais.
 - O próximo badge de cada escada mostra quanto falta e, nas escadas de treinos, uma data estimada. Os oficiais usam a média semanal do período; os não oficiais, a média semanal dos não oficiais no mesmo período.
 - A seção abre sempre recolhida.
 
@@ -71,7 +72,7 @@ Relatório pessoal de treinos de jiu-jitsu montado a partir de uma pasta de foto
 - **Sequências e consistência:** maior streak, streak atual, maior gap e uma linha do tempo de streaks e gaps.
 - **Taxa de presença:** dias úteis com treino oficial ÷ dias úteis do período.
 - **Dias da semana:** treinos oficiais por dia, com os não oficiais à parte e o dia mais forte em destaque.
-- **Dias com múltiplos treinos:** recorde num dia, dias com 2 ou mais e com 3 ou mais treinos, e a distribuição.
+- **Dias com múltiplos treinos:** recorde num dia, dias com 2 ou mais e com 3 ou mais treinos, e a distribuição, contando só os treinos oficiais.
 
 ### Fotos
 - Passar o mouse num dia do calendário mostra a data e os treinos do dia. Depois de um instante, aparecem as prévias de até 3 fotos.
