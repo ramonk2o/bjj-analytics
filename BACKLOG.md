@@ -64,3 +64,15 @@ Status: **Ideia** → **Em andamento** (cada uma no seu branch) → pronta (sai 
 - **Tipo:** Débito
 - **Motivação:** regras do SPEC.md sem teste podem quebrar sem ninguém perceber.
 - **Descrição:** testes para a taxa de presença (dias úteis com treino oficial ÷ dias úteis do período) e para a contagem por dia da semana, com os não oficiais à parte.
+
+## Configurações
+
+### Aulas por grau negativas são salvas
+- **Status:** Ideia
+- **Tipo:** Bug
+- **Motivação:** um número negativo digitado por engano em aulas por grau (ex.: `-5`) é salvo como está e estraga as estimativas de graduação e a Trajetória.
+- **Descrição:** ao salvar, só vazio ou 0 voltam ao padrão (`settingsFromForm` em `src/core/settings.ts` usa `parseInt(v) || padrão`). Um valor negativo deveria ter o mesmo tratamento.
+  - Para reproduzir: `settingsFromForm` com `branca: '-5'`; `beltRules.branca` fica -5.
+  - Encontrado na revisão do chore que levou a validação das configurações para `src/core`.
+- **Perguntas em aberto:**
+  - Negativo volta ao padrão, como vazio ou 0, ou fica no mínimo de 1?
