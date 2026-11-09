@@ -162,7 +162,8 @@ export function computeStats(list: Training[], allList: Training[] | null, opts:
   // Período total. Com o toggle desligado, vai só até o domingo anterior.
   const first = parseDateStr(allDates[0]!);
   const last = includeCurrentWeek ? now : new Date(thisWeekStartTime - 1);
-  const totalCalendarDays = Math.max(1, Math.round((last.getTime() - first.getTime()) / DAY_MS) + 1);
+  // Dias do primeiro ao último, contando os dois; `last` pode ser um horário no meio do dia.
+  const totalCalendarDays = Math.max(1, Math.round((startOfDay(last).getTime() - first.getTime()) / DAY_MS) + 1);
   const totalWeekdays = (() => {
     let count = Math.floor(totalCalendarDays / 7) * 5;
     const remainder = totalCalendarDays % 7;

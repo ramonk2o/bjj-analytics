@@ -202,11 +202,25 @@ describe('volume and frequency', () => {
   });
 });
 
-describe('weekdays in the detailed analysis', () => {
+describe('detailed analysis', () => {
   // oficiais: seg 29/09, qua 01/10, sáb 04/10, seg 06/10; não oficial: ter 30/09
   const all = trainings('00-branca/2025-09-29.jpg', '00-branca/2025-09-30_.jpg', '00-branca/2025-10-01.jpg',
     '00-branca/2025-10-04.jpg', '00-branca/2025-10-06.jpg');
   const s = computeStats(official(all), all, options(NOW))!;
+
+  it('attendance is weekdays with an official training over the weekdays of the period', () => {
+    // período de 29/09 até domingo 12/10: 10 dias úteis, 3 com treino oficial
+    expect(s.totalWeekdays).toBe(10);
+    expect(s.uniqueWeekdays).toBe(3);
+    expect(s.trainedRatio).toBeCloseTo(3 / 10);
+  });
+
+  it('with the current week included, the period ends today, whatever the hour', () => {
+    // 29/09 até quarta 15/10 (12h): 13 dias úteis
+    const on = computeStats(official(all), all, options(NOW, { includeCurrentWeek: true }))!;
+    expect(on.totalWeekdays).toBe(13);
+    expect(on.trainedRatio).toBeCloseTo(3 / 13);
+  });
 
   it('counts official trainings per weekday, with unofficial ones apart', () => {
     expect(s.dowCounts).toEqual([0, 2, 0, 1, 0, 0, 1]);

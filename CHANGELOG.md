@@ -13,3 +13,4 @@ Todas as mudanças relevantes deste projeto ficam registradas aqui. O formato se
 - O snapshot exportado à noite não sai mais com a data do dia seguinte no nome do arquivo.
 - A chegada estimada na faixa preta, na Trajetória, não conta mais aulas a mais quando se está na marrom, nem a menos quando há aulas além do necessário na branca ou na azul.
 - Um número negativo em aulas por grau, nas configurações, volta ao padrão em vez de estragar as estimativas de graduação, inclusive quando já estava salvo de antes.
+- A taxa de presença não conta mais um dia útil a mais no período (a segunda-feira desta semana, ou amanhã com a semana atual incluída), que deixava a taxa menor do que a real.
