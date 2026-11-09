@@ -26,7 +26,7 @@ export function renderDowHeatmap(stats: Stats): void {
   grid.innerHTML = '';
   const totals = stats.dowCounts.map((c, i) => c + stats.dowCountsUnof[i]!);
   const maxC = Math.max(...totals, 1);
-  const peakIdx = stats.dowCounts.indexOf(Math.max(...stats.dowCounts));
+  const peakIdx = stats.peakDow;
   MON_TO_SUN.forEach(i => {
     const c = stats.dowCounts[i]!;
     const u = stats.dowCountsUnof[i]!;

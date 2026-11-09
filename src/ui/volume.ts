@@ -3,8 +3,7 @@ import type { Stats } from '../core/stats';
 import { $, miniStat } from './dom';
 
 export function renderVolumeMetrics(stats: Stats): void {
-  const { total, uniqueDays, weeklyAvg, monthlyAvg, dowCounts, mostActiveMonth, mostActiveWeek } = stats;
-  const peakDow = dowCounts.indexOf(Math.max(...dowCounts));
+  const { total, uniqueDays, weeklyAvg, monthlyAvg, dowCounts, peakDow, mostActiveMonth, mostActiveWeek } = stats;
   const items = [
     miniStat({ label: 'Total de treinos', value: total, extra: `${uniqueDays} ${uniqueDays === 1 ? 'dia diferente' : 'dias diferentes'}` }),
     miniStat({ label: 'Média semanal', value: weeklyAvg, unit: '/sem' }),

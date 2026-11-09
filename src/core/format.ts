@@ -59,3 +59,11 @@ export function fmtWeekStart(d: Date): string {
   end.setDate(end.getDate() + 6);
   return `${d.getDate()}/${d.getMonth() + 1} – ${end.getDate()}/${end.getMonth() + 1}`;
 }
+
+// Texto abaixo do streak atual. Sem streak ativo, há quantas semanas não se atinge o
+// mínimo; com streak, um dos rótulos, conforme a última semana que atingiu: a de
+// referência (labels[0]) ou a anterior (labels[1]).
+export function streakExtra(weeksSince: number | null, currentStreak: number, streakMin: number, labels: [string, string]): string {
+  if (currentStreak === 0) return weeksSince ? `${weeksSince} sem sem ${streakMin}+ treinos` : '—';
+  return weeksSince === 0 ? labels[0] : labels[1];
+}

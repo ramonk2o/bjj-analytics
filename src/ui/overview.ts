@@ -1,10 +1,10 @@
 import { daysAgo } from '../core/dates';
-import { fmtBeltTime, fmtDate, fmtDateShort } from '../core/format';
+import { fmtBeltTime, fmtDate, fmtDateShort, streakExtra } from '../core/format';
 import { periodLabel } from '../core/settings';
 import type { Stats } from '../core/stats';
 import type { Training } from '../core/types';
 import type { RenderContext } from '../state';
-import { $, animateNumber, streakExtra } from './dom';
+import { $, animateNumber } from './dom';
 
 export function renderEmpty(): void {
   $('totalTrainings').textContent = '0';

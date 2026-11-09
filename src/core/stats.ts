@@ -43,6 +43,7 @@ export interface Stats {
   dowCounts: number[];
   dowCountsUnof: number[];
   dowDayCounts: number[];
+  peakDow: number; // dia com mais treinos (0 = domingo); no empate, o primeiro
   byMonth: Map<string, number>;
   byMonthOfficial: Map<string, number>;
   byMonthUnofficial: Map<string, number>;
@@ -204,6 +205,7 @@ export function computeStats(list: Training[], allList: Training[] | null, opts:
   });
   allList.filter(t => !t.official).forEach(t => { dowCountsUnof[t.date.getDay()]!++; });
   const dowDayCounts = dowDaySets.map(s => s.size);
+  const peakDow = dowCounts.indexOf(Math.max(...dowCounts));
 
   // Por mês
   const byMonth = new Map<string, number>();
@@ -338,6 +340,7 @@ export function computeStats(list: Training[], allList: Training[] | null, opts:
     dowCounts,
     dowCountsUnof,
     dowDayCounts,
+    peakDow,
     byMonth,
     byMonthOfficial,
     byMonthUnofficial,

@@ -1,7 +1,7 @@
-import { fmtDateShort } from '../core/format';
+import { fmtDateShort, streakExtra } from '../core/format';
 import type { Stats } from '../core/stats';
 import type { RenderContext } from '../state';
-import { $, miniStat, streakExtra } from './dom';
+import { $, miniStat } from './dom';
 
 const weeks = (n: number) => (n === 1 ? 'semana' : 'semanas');
 

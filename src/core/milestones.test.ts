@@ -50,6 +50,30 @@ describe('unofficial ladder', () => {
   });
 });
 
+describe('streak ladder', () => {
+  it('uses the longest streak and has no estimated date', () => {
+    // streak de 4 semanas (25/08 a 15/09), uma semana abaixo do mínimo, e o atual de 2 (29/09 e 06/10)
+    const list = trainings(...['08-25', '08-27', '09-01', '09-03', '09-08', '09-10', '09-15', '09-17', '09-22', '09-29', '10-01', '10-06', '10-08']
+      .map(d => `00-branca/2025-${d}.jpg`));
+    const stats = computeStats(list, list, options(NOW))!;
+    expect([stats.longest, stats.currentStreak]).toEqual([4, 2]);
+    const badges = computeMilestones(stats, list, options(NOW)).find(g => g.title.startsWith('Streaks'))!.badges;
+    expect(badges.slice(0, 3).map(b => [b.name, b.unlocked])).toEqual([['2 sem', true], ['4 sem', true], ['8 sem', false]]);
+    expect(badges[2]).toMatchObject({ isNext: true, desc: '4 para chegar', eta: null });
+  });
+});
+
+describe('same-day badges', () => {
+  it('count official and unofficial trainings', () => {
+    const list = trainings('00-branca/2025-10-01-a.jpg', '00-branca/2025-10-01-b.jpg', '00-branca/2025-10-01-c_.jpg');
+    const stats = computeStats(list.filter(t => t.official), list, options(NOW))!;
+    const limits = computeMilestones(stats, list, options(NOW)).find(g => g.title === 'Teste de limites')!.badges;
+    const byName = Object.fromEntries(limits.map(b => [b.name, b]));
+    expect(byName['2 no mesmo dia']).toMatchObject({ unlocked: true, desc: '1 vez' });
+    expect(byName['3 no mesmo dia']).toMatchObject({ unlocked: true, desc: '1 vez' });
+  });
+});
+
 describe('chooseCols', () => {
   it('avoids a lone badge in the last row', () => {
     expect([15, 10, 6, 5, 7].map(chooseCols)).toEqual([5, 5, 3, 5, 7]);

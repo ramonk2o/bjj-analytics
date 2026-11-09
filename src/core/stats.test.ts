@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { toDateStr } from './dates';
+import { addDays, toDateStr } from './dates';
 import { computeStats } from './stats';
 import { daily, options, trainings } from './test-helpers';
 
@@ -111,6 +111,26 @@ describe('averages', () => {
     const s = computeStats(list, list, options(NOW, { settings: { weeklyAvgPeriod: '3m' } }))!;
     expect(s.weeklyAvg).toBe('0.6');
   });
+
+  it('a period starting before the first training counts from the first training', () => {
+    // 3 meses antes de 15/10 é 15/07, antes do primeiro treino (15/09): 8 treinos em 4 semanas
+    const s = computeStats(fourWeeks, fourWeeks, options(NOW, { settings: { weeklyAvgPeriod: '3m' } }))!;
+    expect(s.weeklyAvg).toBe('2.0');
+  });
+});
+
+describe('top cards', () => {
+  const fourWeeks = trainings(...['09-15', '09-17', '09-22', '09-24', '09-29', '10-01', '10-06', '10-08'].map(d => `00-branca/2025-${d}.jpg`));
+
+  it('estimates the next milestone by the weekly average of the period', () => {
+    // 60 treinos antigos + 8 recentes: no período de 3 meses, 0,6/sem (no histórico todo seria 2,1/sem).
+    // Faltam 32 para 100: 32 / 0,6 × 7 ≈ 373 dias depois de 15/10
+    const list = trainings(...daily('2025-03-03', 60), ...fourWeeks.map(t => `00-branca/${t.dateStr}.jpg`));
+    const s = computeStats(list, list, options(NOW))!;
+    expect(s.weeklyAvg).toBe('0.6');
+    expect(s.nextMilestoneRemaining).toBe(32);
+    expect(toDateStr(s.nextMilestoneEta!)).toBe('2026-10-23');
+  });
 });
 
 describe('next milestone', () => {
@@ -142,6 +162,55 @@ describe('activity trend', () => {
     const s = computeStats(list, list, options(NOW))!;
     expect(s.recentActivity.trendDir).toBe('down');
     expect(s.recentActivity.peak12).toBe(7);
+  });
+});
+
+describe('activity trend stays flat', () => {
+  // 12 semanas, de 21/07 até a semana de referência (06/10)
+  const weekStart = (i: number) => toDateStr(addDays(new Date('2025-07-21T00:00'), i * 7));
+
+  it('when the change is under 1 training, even above 25% of the average', () => {
+    // [1, 0 × 9, 1, 1]: variação ≈ 0,35, média 0,25
+    const list = trainings(...[0, 10, 11].map(i => `00-branca/${weekStart(i)}.jpg`));
+    const s = computeStats(list, list, options(NOW))!;
+    expect(s.recentActivity.weeks.map(w => w.count)).toEqual([1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1]);
+    expect(s.recentActivity.trendDir).toBe('flat');
+  });
+
+  it('when the change is under 25% of the average, even above 1 training', () => {
+    // [6 × 9, 7, 7, 7]: variação ≈ 1,04, média 6,25 (25% = 1,56)
+    const list = trainings(...Array.from({ length: 9 }, (_, i) => daily(weekStart(i), 6)).flat(), ...daily(weekStart(9), 21));
+    const s = computeStats(list, list, options(NOW))!;
+    expect(s.recentActivity.weeks.map(w => w.count)).toEqual([6, 6, 6, 6, 6, 6, 6, 6, 6, 7, 7, 7]);
+    expect(s.recentActivity.trendDir).toBe('flat');
+  });
+});
+
+describe('volume and frequency', () => {
+  // seg 01/09, 08/09 e 15/09; ter a sex na semana de 06/10
+  const list = trainings(...['09-01', '09-08', '09-15', '10-07', '10-08', '10-09', '10-10'].map(d => `00-branca/2025-${d}.jpg`));
+  const s = computeStats(list, list, options(NOW))!;
+
+  it('finds the strongest weekday', () => {
+    expect(s.peakDow).toBe(1);
+    expect(s.dowCounts[1]).toBe(3);
+  });
+
+  it('finds the most active month and week', () => {
+    expect(s.mostActiveMonth).toEqual({ key: '2025-10', count: 4 });
+    expect(s.mostActiveWeek).toMatchObject({ count: 4, start: new Date('2025-10-06T00:00') });
+  });
+});
+
+describe('weekdays in the detailed analysis', () => {
+  // oficiais: seg 29/09, qua 01/10, sáb 04/10, seg 06/10; não oficial: ter 30/09
+  const all = trainings('00-branca/2025-09-29.jpg', '00-branca/2025-09-30_.jpg', '00-branca/2025-10-01.jpg',
+    '00-branca/2025-10-04.jpg', '00-branca/2025-10-06.jpg');
+  const s = computeStats(official(all), all, options(NOW))!;
+
+  it('counts official trainings per weekday, with unofficial ones apart', () => {
+    expect(s.dowCounts).toEqual([0, 2, 0, 1, 0, 0, 1]);
+    expect(s.dowCountsUnof).toEqual([0, 0, 1, 0, 0, 0, 0]);
   });
 });
 

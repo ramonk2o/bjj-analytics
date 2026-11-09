@@ -38,8 +38,3 @@ export function miniStat({ label, value, unit, extra, accent }: {
   `;
 }
 
-// Uma linha por "semana passada/atual", dependendo do toggle.
-export function streakExtra(weeksSince: number | null, currentStreak: number, streakMin: number, labels: [string, string]): string {
-  if (currentStreak === 0) return weeksSince ? `${weeksSince} sem sem ${streakMin}+ treinos` : '—';
-  return weeksSince === 0 ? labels[0] : labels[1];
-}

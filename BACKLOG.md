@@ -4,42 +4,6 @@ Ideias de funcionalidades, as funcionalidades em construção e bugs e débitos 
 
 Status: **Ideia** → **Em andamento** (cada uma no seu branch) → pronta (sai do arquivo no commit que a implementa). Ideias descartadas vão para a última seção.
 
-## Regras gerais
-
-### Faltam testes: regras gerais
-- **Status:** Ideia
-- **Tipo:** Débito
-- **Motivação:** regras do SPEC.md sem teste podem quebrar sem ninguém perceber.
-- **Descrição:** testes para as regras de "Regras que valem para tudo" que ainda não têm:
-  - a média semanal conta a partir do primeiro treino quando o período escolhido começa antes dele;
-  - a tendência da atividade fica "estável" quando a variação não passa de 1 treino nem de 25% da média das últimas 12 semanas.
-
-## Cards do topo
-
-### Faltam testes: cards do topo
-- **Status:** Ideia
-- **Tipo:** Débito
-- **Motivação:** regras do SPEC.md sem teste podem quebrar sem ninguém perceber.
-- **Descrição:** testes para:
-  - a data estimada do próximo marco, pela média semanal do período;
-  - sem streak ativo, o card mostra há quantas semanas não se atinge o mínimo (o texto é montado na interface, fora de `src/core`).
-
-## Treinos
-
-### Faltam testes: treinos
-- **Status:** Ideia
-- **Tipo:** Débito
-- **Motivação:** regras do SPEC.md sem teste podem quebrar sem ninguém perceber.
-- **Descrição:** testes para o dia da semana mais forte, o mês mais ativo e a semana mais ativa de "Volume e frequência".
-
-## Marcos
-
-### Faltam testes: marcos
-- **Status:** Ideia
-- **Tipo:** Débito
-- **Motivação:** regras do SPEC.md sem teste podem quebrar sem ninguém perceber.
-- **Descrição:** testes para a escada de streaks (sem data estimada) e para os badges de 2 e 3 treinos no mesmo dia desbloqueados, contando treinos oficiais e não oficiais.
-
 ## Análise detalhada
 
 ### Filtro de oficiais e não oficiais na análise detalhada
@@ -53,8 +17,13 @@ Status: **Ideia** → **Em andamento** (cada uma no seu branch) → pronta (sai 
   - Vale para toda a análise (sequências, taxa de presença, dias da semana) ou só para os dias com múltiplos treinos?
   - Qual o padrão: Todos ou Oficiais?
 
-### Faltam testes: análise detalhada
+### Taxa de presença conta um dia a mais no período
 - **Status:** Ideia
-- **Tipo:** Débito
-- **Motivação:** regras do SPEC.md sem teste podem quebrar sem ninguém perceber.
-- **Descrição:** testes para a taxa de presença (dias úteis com treino oficial ÷ dias úteis do período) e para a contagem por dia da semana, com os não oficiais à parte.
+- **Tipo:** Bug
+- **Motivação:** a taxa de presença sai menor do que deveria, e o texto "N de M dias úteis" conta um dia útil que não pertence ao período.
+- **Descrição:** o período analisado deveria terminar no domingo passado (switch desligado) ou hoje (switch ligado), mas a conta de dias do período (`totalCalendarDays` em `computeStats`, `src/core/stats.ts`) arredonda a diferença para cima e soma 1, e passa a incluir o dia seguinte.
+  - Com o switch desligado, entra sempre a segunda-feira desta semana.
+  - Com o switch ligado, entra o dia de amanhã quando a hora já passou do meio-dia.
+  - Para reproduzir: oficiais em 29/09, 01/10, 04/10 e 06/10/2025 e um não oficial em 30/09, com "agora" em 15/10/2025 12:00 e o switch desligado; de 29/09 a 12/10 há 10 dias úteis, mas `totalWeekdays` fica 11.
+  - O teste da taxa de presença (que faltava, como débito) entra junto com a correção.
+  - Encontrado ao escrever os testes que faltavam.
