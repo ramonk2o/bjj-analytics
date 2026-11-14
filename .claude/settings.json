@@ -32,7 +32,15 @@
       "Bash(git restore:*)",
       "Bash(git branch -m:*)",
       "Bash(git remote set-head:*)",
-      "Bash(git tag:*)"
+      "Bash(git tag:*)",
+      "Bash(gh pr view:*)",
+      "Bash(gh pr list:*)",
+      "Bash(gh pr checks:*)",
+      "Bash(gh auth status:*)",
+      "Bash(gh issue view:*)",
+      "Bash(gh issue list:*)",
+      "Bash(gh label list:*)",
+      "Bash(gh repo view:*)"
     ]
   },
   "extraKnownMarketplaces": {

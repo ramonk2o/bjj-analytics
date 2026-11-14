@@ -1,6 +1,6 @@
 # Jiu-Jitsu Analytics
 
-Como o Jiu-Jitsu Analytics funciona hoje, em regras (não detalhes visuais), mais seus dados e decisões técnicas. Gerenciado com o skill `document`: é atualizado quando uma funcionalidade, correção ou chore muda o que ele descreve, a partir do que foi construído. Ideias ficam no BACKLOG.md; o que mudou e quando fica no CHANGELOG.md.
+Como o Jiu-Jitsu Analytics funciona hoje, em regras (não detalhes visuais), mais seus dados e decisões técnicas. Gerenciado com o skill `document`: é atualizado quando uma funcionalidade, correção ou chore muda o que ele descreve, a partir do que foi construído. Ideias ficam nas issues do GitHub; o que mudou e quando fica no CHANGELOG.md.
 
 ## Objetivo
 
