@@ -24,10 +24,8 @@ A local-only web app that reads a `jiu-jitsu` photo folder (one subfolder per be
 - `src/core/test-helpers.ts` builds `Training` fixtures from file paths (`training('00-branca/2025-06-27-a_.jpg')`, `daily(...)`) and stats options with a fixed `now`, so tests describe data the way the folder does.
 - Stats, graduation and milestone rules are tested by calling the `src/core` functions with fixtures, explicit settings and a fixed `now`, as in `src/core/stats.test.ts`. Only what needs a real Chromium browser with a photo folder (folder picking and permission, tooltips and photo previews, lightbox, chart visuals, snapshot export) goes into "To check by hand".
 
-## Development cycle
-This project uses the `minidev` cycle. When a step needs one of its skills and it isn't available, tell the user and stop; don't imitate it from memory.
-- Ideas: `document`. Features: `build`. Bugs: `fix`. Refactoring, upgrades and other changes that keep the behavior: `chore`.
-- Integration: pull requests.
-- Backlog: GitHub issues.
-- Documents: Brazilian Portuguese.
-- Releases: cut the version with `document`. Every push to the main branch already deploys the app to GitHub Pages (`.github/workflows/pages.yml`), so the release doesn't deploy anything; to share the single file, run `npm run build` and send `dist/bjj-analytics.html`.
+## Workflow
+- Changes go to `main` through pull requests.
+- Backlog: the repository's GitHub issues.
+- Documents, issues and pull requests: Brazilian Portuguese.
+- Every push to `main` deploys the app to GitHub Pages (`.github/workflows/pages.yml`). To share the single file, run `npm run build` and send `dist/bjj-analytics.html`.

@@ -42,16 +42,5 @@
       "Bash(gh label list:*)",
       "Bash(gh repo view:*)"
     ]
-  },
-  "extraKnownMarketplaces": {
-    "minidev": {
-      "source": {
-        "source": "github",
-        "repo": "ramonk2o/minidev"
-      }
-    }
-  },
-  "enabledPlugins": {
-    "minidev@minidev": true
   }
 }
