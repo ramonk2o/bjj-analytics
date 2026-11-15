@@ -1,13 +1,13 @@
 # BJJ Analytics
 
 A local-only web app that reads a `jiu-jitsu` photo folder (one subfolder per belt) through the File System Access API and shows training analytics: streaks, averages, heatmap, graduation progress and milestones.
-- How it works today: `SPEC.md`. Ideas, the features in progress and bugs or debt left for later: the repository's GitHub issues. What changed in each version: `CHANGELOG.md`.
+- What changed in each version: `CHANGELOG.md`.
 
 ## Commands
 - Install: `npm install`
 - Develop: `npm run dev` (Vite dev server; open in Chrome/Edge/Brave, since File System Access is Chromium-only)
 - Build: `npm run build` (runs `tsc --noEmit` first, then writes a single self-contained `dist/bjj-analytics.html`)
-- Tests: `npm test` (Vitest)
+- Tests: `npm test` (Vitest). One file: `npx vitest run src/core/stats.test.ts`
 - Type-check: `npm run typecheck`
 
 ## Conventions
@@ -21,13 +21,27 @@ A local-only web app that reads a `jiu-jitsu` photo folder (one subfolder per be
 
 ## Tests
 - Tests live next to the code as `*.test.ts`.
+- The seam is the public functions of `src/core/`: stats, graduation and milestone rules are tested by calling them with fixtures, explicit settings and a fixed `now`, as in `src/core/stats.test.ts`. `src/data/` and `src/ui/` have no automated tests.
 - `src/core/test-helpers.ts` builds `Training` fixtures from file paths (`training('00-branca/2025-06-27-a_.jpg')`, `daily(...)`) and stats options with a fixed `now`, so tests describe data the way the folder does.
-- Stats, graduation and milestone rules are tested by calling the `src/core` functions with fixtures, explicit settings and a fixed `now`, as in `src/core/stats.test.ts`. Only what needs a real Chromium browser with a photo folder (folder picking and permission, tooltips and photo previews, lightbox, chart visuals, snapshot export) goes into "To check by hand".
+- What needs a real Chromium browser with a photo folder (folder picking and permission, tooltips and photo previews, lightbox, chart visuals, snapshot export) is checked by hand in the browser; list those checks in the pull request.
 
-## Development cycle
-This project uses the `minidev` cycle. When a step needs one of its skills and it isn't available, tell the user and stop; don't imitate it from memory.
-- Ideas: `document`. Features: `build`. Bugs: `fix`. Refactoring, upgrades and other changes that keep the behavior: `chore`.
-- Integration: pull requests.
-- Backlog: GitHub issues.
-- Documents: Brazilian Portuguese.
-- Releases: cut the version with `document`. Every push to the main branch already deploys the app to GitHub Pages (`.github/workflows/pages.yml`), so the release doesn't deploy anything; to share the single file, run `npm run build` and send `dist/bjj-analytics.html`.
+## Workflow
+- Changes go to `main` through pull requests.
+- Documents, issues and pull requests: Brazilian Portuguese.
+- Every pull request with a change people using the app can notice (new behavior, a fix, a number or text that changes) adds a line under `## [Unreleased]` in `CHANGELOG.md`, in the matching Keep a Changelog group (`Added`, `Changed`, `Fixed`, `Removed`), in Brazilian Portuguese and in the user's words. Refactoring, tests, tooling and docs-only changes don't.
+- Releases: rename `[Unreleased]` to `[X.Y.Z] - YYYY-MM-DD` and open a new empty `[Unreleased]`, update the links at the bottom, bump `version` in `package.json`, and tag `X.Y.Z`.
+- Every push to `main` deploys the app to GitHub Pages (`.github/workflows/pages.yml`). To share the single file, run `npm run build` and send `dist/bjj-analytics.html`.
+
+## Agent skills
+
+### Issue tracker
+
+Issues live in GitHub Issues for ramonk2o/bjj-analytics, via the `gh` CLI. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+The five default triage labels: `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context: one `GLOSSARY.md` and `docs/adr/` at the repo root. See `docs/agents/domain.md`.
