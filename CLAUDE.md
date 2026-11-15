@@ -1,7 +1,7 @@
 # BJJ Analytics
 
 A local-only web app that reads a `jiu-jitsu` photo folder (one subfolder per belt) through the File System Access API and shows training analytics: streaks, averages, heatmap, graduation progress and milestones.
-- How it works today: `SPEC.md`. What changed in each version: `CHANGELOG.md`.
+- What changed in each version: `CHANGELOG.md`.
 
 ## Commands
 - Install: `npm install`

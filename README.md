@@ -23,7 +23,7 @@ jiu-jitsu/
 └── 04-preta/
 ```
 
-Arquivos `.jpg`, `.jpeg` ou `.png` com o nome `AAAA-MM-DD[-a][_]`. Outros arquivos são ignorados. As regras completas estão em [SPEC.md](SPEC.md).
+Arquivos `.jpg`, `.jpeg` ou `.png` com o nome `AAAA-MM-DD[-a][_]`. Outros arquivos são ignorados.
 
 ## Desenvolvimento
 
