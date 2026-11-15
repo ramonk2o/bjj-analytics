@@ -28,6 +28,8 @@ A local-only web app that reads a `jiu-jitsu` photo folder (one subfolder per be
 ## Workflow
 - Changes go to `main` through pull requests.
 - Documents, issues and pull requests: Brazilian Portuguese.
+- Every pull request with a change people using the app can notice (new behavior, a fix, a number or text that changes) adds a line under `## [Unreleased]` in `CHANGELOG.md`, in the matching Keep a Changelog group (`Added`, `Changed`, `Fixed`, `Removed`), in Brazilian Portuguese and in the user's words. Refactoring, tests, tooling and docs-only changes don't.
+- Releases: rename `[Unreleased]` to `[X.Y.Z] - YYYY-MM-DD` and open a new empty `[Unreleased]`, update the links at the bottom, bump `version` in `package.json`, and tag `X.Y.Z`.
 - Every push to `main` deploys the app to GitHub Pages (`.github/workflows/pages.yml`). To share the single file, run `npm run build` and send `dist/bjj-analytics.html`.
 
 ## Agent skills
