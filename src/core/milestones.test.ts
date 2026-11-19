@@ -74,6 +74,34 @@ describe('same-day badges', () => {
   });
 });
 
+describe('badge ladders', () => {
+  // Uma lista pequena basta: os degraus não dependem dos treinos.
+  const list = trainings('00-branca/2025-10-01.jpg', '00-branca/2025-10-02_.jpg');
+  const stats = computeStats(list.filter(t => t.official), list, options(NOW))!;
+  const groups = computeMilestones(stats, list, options(NOW));
+  const badgeNames = (title: string) => groups.find(g => g.title === title)!.badges.map(b => b.name);
+
+  it('official trainings: 10, 25, 50, 100, 200, 300, 500, 750, 1000, 1500, 2000, 3000, 5000, 7500, 10000', () => {
+    expect(badgeNames('Treinos')).toEqual([
+      '10 treinos', '25 treinos', '50 treinos', '100 treinos', '200 treinos', '300 treinos', '500 treinos', '750 treinos',
+      '1000 treinos', '1500 treinos', '2000 treinos', '3000 treinos', '5000 treinos', '7500 treinos', '10000 treinos',
+    ]);
+  });
+
+  it('unofficial trainings: 10, 25, 50, 100, 200, 300, 500, 750, 1000, 1500', () => {
+    expect(badgeNames('Treinos não oficiais')).toEqual([
+      '10 não oficiais', '25 não oficiais', '50 não oficiais', '100 não oficiais', '200 não oficiais',
+      '300 não oficiais', '500 não oficiais', '750 não oficiais', '1000 não oficiais', '1500 não oficiais',
+    ]);
+  });
+
+  it('longest streak: 2, 4, 8, 12, 16, 26, 52, 78, 104, 156 weeks', () => {
+    expect(badgeNames('Streaks (semanas consecutivas)')).toEqual([
+      '2 sem', '4 sem', '8 sem', '12 sem', '16 sem', '26 sem', '52 sem', '78 sem', '104 sem', '156 sem',
+    ]);
+  });
+});
+
 describe('chooseCols', () => {
   it('avoids a lone badge in the last row', () => {
     expect([15, 10, 6, 5, 7].map(chooseCols)).toEqual([5, 5, 3, 5, 7]);

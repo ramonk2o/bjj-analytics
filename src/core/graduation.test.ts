@@ -45,6 +45,28 @@ describe('computeGraduation', () => {
     expect(g.aulasNaFaixa).toBe(1);
   });
 
+  it('measures the time at the current belt and the time since the first official training', () => {
+    // faixa branca desde 02/06, azul desde 01/07; "hoje" é 15/10
+    const g = computeGraduation(
+      trainings(...daily('2025-06-02', 10), ...daily('2025-07-01', 5, '01-azul')), 5, settings, NOW)!;
+    expect(g.belt.class).toBe('azul');
+    expect(g.daysAtBelt).toBe(106); // 01/07 → 15/10
+    expect(g.totalJJDays).toBe(135); // 02/06 → 15/10
+  });
+
+  it('without a belt change both times are the same', () => {
+    const g = computeGraduation(trainings(...daily('2025-07-01', 5)), 5, settings, NOW)!;
+    expect(g.daysAtBelt).toBe(106);
+    expect(g.totalJJDays).toBe(106);
+  });
+
+  it('unofficial trainings do not start the clock', () => {
+    const g = computeGraduation(
+      trainings('00-branca/2025-05-01_.jpg', '00-branca/2025-07-01.jpg', '00-branca/2025-08-01_.jpg'), 5, settings, NOW)!;
+    expect(g.daysAtBelt).toBe(106);
+    expect(g.totalJJDays).toBe(106);
+  });
+
   it('black belt has no grau progress', () => {
     const g = computeGraduation(trainings('04-preta/2025-10-01.jpg'), 5, settings, NOW)!;
     expect(g.progress).toBeNull();
