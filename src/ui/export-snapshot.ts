@@ -1,4 +1,4 @@
-import { toDateStr } from '../core/dates';
+import { snapshotFilename } from '../core/format';
 import { state } from '../state';
 import { showToast } from './dom';
 import { dayLabel } from './tooltip';
@@ -81,7 +81,7 @@ export function exportSnapshot(): void {
   const url = URL.createObjectURL(new Blob([html], { type: 'text/html' }));
   const a = document.createElement('a');
   a.href = url;
-  a.download = `jiu-jitsu-report-${toDateStr(new Date())}.html`; // dia local
+  a.download = snapshotFilename(new Date());
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);

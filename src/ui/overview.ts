@@ -1,5 +1,5 @@
 import { daysAgo } from '../core/dates';
-import { fmtBeltTime, fmtDate, fmtDateShort, streakExtra } from '../core/format';
+import { fmtBeltTime, fmtDate, fmtDateShort, fmtLastTrainingAgo, streakExtra, unofficialTotal } from '../core/format';
 import { periodLabel } from '../core/settings';
 import type { Stats } from '../core/stats';
 import type { Training } from '../core/types';
@@ -32,10 +32,10 @@ export function renderStats(stats: Stats, list: Training[], ctx: RenderContext):
 
   // Total
   animateNumber('totalTrainings', stats.total);
-  const unof = effective.filter(t => !t.official).length;
-  $('totalUnofficialInline').textContent = unof ? `+${unof}` : '';
-  $('totalUnofficial').innerHTML = unof
-    ? `<span class="unof-extra">+${unof} não oficial${unof === 1 ? '' : 's'}</span>`
+  const unof = unofficialTotal(effective);
+  $('totalUnofficialInline').textContent = unof.inline;
+  $('totalUnofficial').innerHTML = unof.count
+    ? `<span class="unof-extra">${unof.label}</span>`
     : '';
 
   // Próximo marco (múltiplo de 50)
@@ -65,6 +65,5 @@ export function renderStats(stats: Stats, list: Training[], ctx: RenderContext):
   // Último treino
   const last = list[list.length - 1]!;
   $('lastTraining').textContent = fmtDateShort(last.date);
-  const ago = daysAgo(last.date, now);
-  $('lastTrainingAgo').textContent = ago === 0 ? 'hoje' : ago === 1 ? 'ontem' : `há ${ago} dias`;
+  $('lastTrainingAgo').textContent = fmtLastTrainingAgo(last.date, now);
 }

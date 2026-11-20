@@ -1,4 +1,5 @@
-import { parseDateStr } from './dates';
+import { daysAgo, parseDateStr, toDateStr } from './dates';
+import type { Training } from './types';
 
 export const DOW_NAMES = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'] as const;
 export const MONTH_NAMES = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'] as const;
@@ -66,4 +67,28 @@ export function fmtWeekStart(d: Date): string {
 export function streakExtra(weeksSince: number | null, currentStreak: number, streakMin: number, labels: [string, string]): string {
   if (currentStreak === 0) return weeksSince ? `${weeksSince} sem sem ${streakMin}+ treinos` : '—';
   return weeksSince === 0 ? labels[0] : labels[1];
+}
+
+// Quando foi o último treino: hoje, ontem ou há N dias.
+export function fmtLastTrainingAgo(last: Date, now: Date): string {
+  const days = daysAgo(last, now);
+  return days === 0 ? 'hoje' : days === 1 ? 'ontem' : `há ${days} dias`;
+}
+
+// Nome do arquivo do snapshot, com o dia local (não o UTC, que à noite já é o dia seguinte).
+export function snapshotFilename(now: Date): string {
+  return `jiu-jitsu-report-${toDateStr(now)}.html`;
+}
+
+// "+N não oficial(is)", como aparece nos totais e nas semanas.
+export function fmtUnofficialCount(count: number): string {
+  return `+${count} não oficial${count === 1 ? '' : 's'}`;
+}
+
+// Total de treinos: os não oficiais aparecem à parte, e nada quando não há.
+export function unofficialTotal(trainings: Training[]): { count: number; inline: string; label: string } {
+  const count = trainings.filter(t => !t.official).length;
+  return count
+    ? { count, inline: `+${count}`, label: fmtUnofficialCount(count) }
+    : { count: 0, inline: '', label: '' };
 }

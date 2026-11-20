@@ -31,6 +31,12 @@ export interface Graduation {
   progress: GradeProgress | null; // null na preta (graduação por tempo, não por aulas)
 }
 
+// Próximo passo já atingido: pronto, esperando a promoção, e quantas aulas passou do necessário.
+export function graduationReadiness(progress: GradeProgress, aulasNaFaixa: number): { ready: boolean; classesOver: number } {
+  const ready = progress.aulasParaProximo === 0;
+  return { ready, classesOver: ready ? aulasNaFaixa - progress.nextThreshold : 0 };
+}
+
 // Faixa atual = a do treino oficial mais recente. `trainings` é a lista efetiva
 // (já sem a semana atual quando o toggle está desligado), ordenada por data.
 export function computeGraduation(
