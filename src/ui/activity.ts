@@ -1,4 +1,4 @@
-import { MONTH_NAMES, fmtDateShort } from '../core/format';
+import { MONTH_NAMES, fmtDateShort, fmtUnofficialCount } from '../core/format';
 import type { Stats } from '../core/stats';
 import type { RenderContext } from '../state';
 import { $ } from './dom';
@@ -58,7 +58,7 @@ export function renderRecentActivity(stats: Stats, ctx: RenderContext): void {
     const yTop = pad.top + usableH - totalH;
     const yOf = pad.top + usableH - ofH;
     const tipParts = [`${w.official} oficial`];
-    if (w.unofficial) tipParts.push(`+${w.unofficial} não oficial${w.unofficial === 1 ? '' : 's'}`);
+    if (w.unofficial) tipParts.push(fmtUnofficialCount(w.unofficial));
     const curTag = w.isCurrent ? (ctx.includeCurrentWeek ? ' (atual, parcial)' : ' (última)') : '';
     const tip = `${fmtDateShort(w.start)} → ${fmtDateShort(w.end)} · ${tipParts.join(' ')}${curTag}`;
     const cur = w.isCurrent ? ' current' : '';

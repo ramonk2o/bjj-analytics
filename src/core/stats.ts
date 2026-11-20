@@ -69,6 +69,11 @@ export interface Stats {
 
 export const NEXT_MILESTONE_STEP = 50;
 
+// Próximo marco: o próximo múltiplo de 50 acima do total (sempre estritamente acima).
+export function nextMilestoneAfter(total: number): number {
+  return (Math.floor(total / NEXT_MILESTONE_STEP) + 1) * NEXT_MILESTONE_STEP;
+}
+
 // Tira a semana atual (ainda em andamento) quando o toggle está desligado.
 export function filterCurrentWeek(list: Training[], includeCurrentWeek: boolean, now: Date): Training[] {
   if (includeCurrentWeek) return list;
@@ -268,7 +273,7 @@ export function computeStats(list: Training[], allList: Training[] | null, opts:
     .map((t, i) => ({ dateStr: t.dateStr, date: t.date, total: i + 1 }));
 
   // ===== Próximo marco de 50 treinos =====
-  const nextMilestoneTotal = (Math.floor(list.length / NEXT_MILESTONE_STEP) + 1) * NEXT_MILESTONE_STEP;
+  const nextMilestoneTotal = nextMilestoneAfter(list.length);
   const nextMilestoneRemaining = nextMilestoneTotal - list.length;
   const perWeek = parseFloat(weeklyAvg) || 0;
   let nextMilestoneEta: Date | null = null;

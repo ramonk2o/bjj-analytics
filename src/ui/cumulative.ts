@@ -1,3 +1,4 @@
+import { cumulativeMarkers, cumulativeProjection } from '../core/cumulative';
 import { fmtDate, fmtDateShort } from '../core/format';
 import type { Stats } from '../core/stats';
 import type { RenderContext } from '../state';
@@ -17,14 +18,10 @@ export function renderCumulativeChart(stats: Stats, ctx: RenderContext): void {
   const minDate = cum[0]!.date.getTime();
   const maxTotal = lastCum.total;
   // Inclui o próximo marco na escala Y pra projeção caber
-  const milestone50 = (Math.floor(lastCum.total / 50) + 1) * 50;
-  const niceMax = Math.ceil(Math.max(maxTotal, milestone50) / 50) * 50 || 50;
+  const projection = cumulativeProjection(lastCum.total, parseFloat(stats.monthlyAvg) || 0, ctx.now);
+  const niceMax = Math.ceil(Math.max(maxTotal, projection.milestone) / 50) * 50 || 50;
   // ETA projetado do próximo marco, pra estender o eixo X
-  const projMonthly = parseFloat(stats.monthlyAvg) || 0;
-  const projRemaining = milestone50 - lastCum.total;
-  const projEtaMs = projMonthly > 0 && projRemaining > 0
-    ? nowMs + (projRemaining / projMonthly) * 30.4375 * 86400000
-    : nowMs;
+  const projEtaMs = projection.etaMs ?? nowMs;
   const maxDate = Math.max(lastCum.date.getTime(), nowMs, projEtaMs);
 
   const xFor = (t: number) => pad.left + ((t - minDate) / (maxDate - minDate)) * (W - pad.left - pad.right);
@@ -55,24 +52,17 @@ export function renderCumulativeChart(stats: Stats, ctx: RenderContext): void {
   svg.insertAdjacentHTML('beforeend', `<path class="cum-line" d="${pathD}" />`);
 
   // Marcadores nos múltiplos de 100/50/25, conforme o total
-  const milestoneStep = maxTotal >= 200 ? 100 : (maxTotal >= 100 ? 50 : 25);
-  const reached: { m: number; x: number; y: number; dateStr: string }[] = [];
-  const seen = new Set<number>();
-  cum.forEach(p => {
-    const m = Math.floor(p.total / milestoneStep) * milestoneStep;
-    if (m > 0 && !seen.has(m) && m <= maxTotal) {
-      seen.add(m);
-      reached.push({ m, x: xFor(p.date.getTime()), y: yFor(p.total), dateStr: p.dateStr });
-    }
-  });
+  const reached = cumulativeMarkers(cum).map(({ milestone, point }) => ({
+    m: milestone, x: xFor(point.date.getTime()), y: yFor(point.total), dateStr: point.dateStr,
+  }));
   reached.forEach(r => {
     svg.insertAdjacentHTML('beforeend',
       `<circle class="cum-marker" cx="${r.x}" cy="${r.y}" r="4" data-tip="${r.m}º treino · ${fmtDate(r.dateStr)}" />`);
   });
 
   // Projeção até o próximo marco
-  const nextMilestone = stats.nextMilestoneTotal;
-  const hasProjection = nextMilestone > lastCum.total && projMonthly > 0;
+  const nextMilestone = projection.milestone;
+  const hasProjection = projection.etaMs !== null;
   const projLabel = fmtDateShort(new Date(projEtaMs));
   if (hasProjection) {
     const toX = xFor(projEtaMs);

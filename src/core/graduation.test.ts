@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { addDays, toDateStr } from './dates';
 import { fmtMonthYear } from './format';
-import { computeBeltTrajectory, computeGraduation } from './graduation';
+import { computeBeltTrajectory, computeGraduation, graduationReadiness } from './graduation';
 import { defaultSettings } from './settings';
 import { daily, trainings } from './test-helpers';
 
@@ -124,5 +124,29 @@ describe('computeBeltTrajectory', () => {
   it('without a weekly average there is no projection', () => {
     const none = computeBeltTrajectory(list, '01-azul', 0, settings, NOW);
     expect(none[2]!.info).toEqual([{ label: '', value: '—' }]);
+  });
+});
+
+describe('graduationReadiness', () => {
+  const readinessAt = (aulas: number, overrides: Partial<typeof settings> = {}) => {
+    const g = computeGraduation(trainings(...daily('2024-01-01', aulas)), 5, { ...settings, ...overrides }, NOW)!;
+    return graduationReadiness(g.progress!, g.aulasNaFaixa);
+  };
+
+  it('is not ready while classes are missing for the next step', () => {
+    expect(readinessAt(65)).toEqual({ ready: false, classesOver: 0 });
+  });
+
+  it('is ready, with no classes over, exactly at the threshold', () => {
+    expect(readinessAt(150)).toEqual({ ready: true, classesOver: 0 });
+  });
+
+  it('says how many classes went past what was needed', () => {
+    expect(readinessAt(155)).toEqual({ ready: true, classesOver: 5 });
+  });
+
+  it('counts past the next grau threshold when a grau override holds the grau back', () => {
+    // grau 1 pede 60 aulas no total; com 65 já passou 5
+    expect(readinessAt(65, { grauOverride: '1' })).toEqual({ ready: true, classesOver: 5 });
   });
 });

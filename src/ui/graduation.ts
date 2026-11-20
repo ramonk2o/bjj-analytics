@@ -1,5 +1,5 @@
 import { fmtDate, fmtSpan } from '../core/format';
-import { computeBeltTrajectory, computeGraduation } from '../core/graduation';
+import { computeBeltTrajectory, computeGraduation, graduationReadiness } from '../core/graduation';
 import { periodShort } from '../core/settings';
 import type { Stats } from '../core/stats';
 import type { RenderContext } from '../state';
@@ -83,7 +83,7 @@ export function renderGraduation(stats: Stats, ctx: RenderContext): void {
   // Pips dos graus já obtidos
   const pipsHtml = [0, 1, 2, 3].map(i => `<span class="gb-grau-pip${i < currentGrau ? ' on' : ''}"></span>`).join('');
 
-  const ready = aulasParaProximo === 0;
+  const { ready, classesOver } = graduationReadiness(p, aulasNaFaixa);
   container.innerHTML = `
     <div class="grad-header">
       <div class="grad-belt">
@@ -124,7 +124,7 @@ export function renderGraduation(stats: Stats, ctx: RenderContext): void {
       <div class="gf-item">
         <span class="gf-label">ETA · média (${periodShort(ctx.settings.weeklyAvgPeriod)})</span>
         <span class="gf-value">${ready ? 'Ultrapassado' : fmtEta(p.etaDate)}</span>
-        <span class="gf-extra">${ready ? `superou em ${aulasNaFaixa - p.nextThreshold} aulas` : `${fmtDur(p.etaWeeks)} a ${p.weeklyAvg.toFixed(1)} aulas/sem`}</span>
+        <span class="gf-extra">${ready ? `superou em ${classesOver} aulas` : `${fmtDur(p.etaWeeks)} a ${p.weeklyAvg.toFixed(1)} aulas/sem`}</span>
       </div>
       <div class="gf-item">
         <span class="gf-label">ETA · ritmo na faixa</span>
